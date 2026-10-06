@@ -16,5 +16,9 @@
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/computer-data-services-section.git",
     "directory": "services/number-services-section/services/exact-number-data-service"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   }
 }

@@ -249,4 +249,3 @@ export function expandDecimalNotation(text) {
   expanded = expanded.replace(/^0+(?=\d)/u, "").replace(/(\.\d*?)0+$/u, "$1").replace(/\.$/u, "");
   return (sign === "-" && !/^0(?:\.0*)?$/u.test(expanded) ? "-" : "") + expanded;
 }
-
