@@ -6,7 +6,8 @@
   "description": "Exact integer, rational and decimal-string arithmetic recovered from the machine snapshot.",
   "exports": {
     "./exact-number": "./src/exact-number.mjs",
-    "./decimal-string": "./src/decimal-string.mjs"
+    "./decimal-string": "./src/decimal-string.mjs",
+    "./graded": "./src/graded.mjs"
   },
   "files": [
     "src",
