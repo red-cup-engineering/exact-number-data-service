@@ -227,3 +227,26 @@ export function decimalOfRational(q, places, options) {
   }
   return (negative ? "-" : "") + digits;
 }
+
+/** Expand decimal notation exactly, preserving coefficient digits and plain-input precision.
+ * Numeric inputs preserve their already-represented value; precision lost before admission
+ * cannot be reconstructed. Expansion above a million decimal positions is refused.
+ */
+export function expandDecimalNotation(text) {
+  const raw = String(text);
+  const match = /^([+-]?)(?:(\d+)(?:\.(\d*))?|\.(\d+))(?:[eE]([+-]?\d+))?$/u.exec(raw);
+  if (!match) throw new TypeError(`decimal: invalid decimal quantity: ${JSON.stringify(text)}`);
+  if (!/[eE]/u.test(raw)) return raw.replace(/^\+/u, "").replace(/^(-?)\./u, "$10.");
+  const [, sign, whole = "0", fraction = "", leadingFraction, exponent = "0"] = match;
+  const digits = whole + (leadingFraction ?? fraction);
+  // Only the position is numeric. The coefficient never enters binary floating point.
+  const position = BigInt(whole.length) + BigInt(exponent);
+  if (position > 1000000n || position < -1000000n) throw new RangeError("decimal: expanded quantity exceeds decimal carrier limit");
+  const point = Number(position);
+  let expanded = point <= 0 ? "0." + "0".repeat(-point) + digits
+    : point >= digits.length ? digits + "0".repeat(point - digits.length)
+    : digits.slice(0, point) + "." + digits.slice(point);
+  expanded = expanded.replace(/^0+(?=\d)/u, "").replace(/(\.\d*?)0+$/u, "$1").replace(/\.$/u, "");
+  return (sign === "-" && !/^0(?:\.0*)?$/u.test(expanded) ? "-" : "") + expanded;
+}
+
