@@ -6,4 +6,3 @@ const total=gradedAdd(hive,addition);
 assert.equal(gradedToExactString(total),'4503599627370496500001/500000 HIVE');
 assert.deepEqual(admitGraded(JSON.parse(JSON.stringify(total))),total);
 assert.throws(()=>gradedAdd(hive,gradedOfDecimal('1.000','HBD')),/grade mismatch/);
-

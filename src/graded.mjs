@@ -216,4 +216,3 @@ export function gradedComplete(known) {
         residual: completion.residual,
     });
 }
-
