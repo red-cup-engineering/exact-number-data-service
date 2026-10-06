@@ -1,0 +1,20 @@
+{
+  "name": "@red-cup-engineering/exact-number-data-service",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "description": "Exact integer, rational and decimal-string arithmetic recovered from the machine snapshot.",
+  "exports": {
+    "./exact-number": "./src/exact-number.mjs",
+    "./decimal-string": "./src/decimal-string.mjs"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/computer-data-services-section.git",
+    "directory": "services/number-services-section/services/exact-number-data-service"
+  }
+}
