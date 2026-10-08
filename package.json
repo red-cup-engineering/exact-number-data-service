@@ -1,13 +1,15 @@
 {
   "name": "@red-cup-engineering/exact-number-data-service",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "private": false,
   "description": "Exact integer, rational and decimal-string arithmetic recovered from the machine snapshot.",
   "exports": {
     "./exact-number": "./src/exact-number.mjs",
     "./decimal-string": "./src/decimal-string.mjs",
-    "./graded": "./src/graded.mjs"
+    "./graded": "./src/graded.mjs",
+    "./exact-number-host": "./src/exact-number-host.mjs",
+    "./quadratic": "./src/quadratic.mjs"
   },
   "files": [
     "src",
