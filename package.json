@@ -7,7 +7,9 @@
   "exports": {
     "./exact-number": "./src/exact-number.mjs",
     "./decimal-string": "./src/decimal-string.mjs",
-    "./graded": "./src/graded.mjs"
+    "./graded": "./src/graded.mjs",
+    "./quadratic": "./src/quadratic.mjs",
+    "./exact-number-host": "./src/exact-number-host.mjs"
   },
   "files": [
     "src",
