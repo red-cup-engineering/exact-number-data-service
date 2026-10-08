@@ -6,6 +6,7 @@
     "./graded": "./src/graded.mjs",
     "./quadratic": "./src/quadratic.mjs",
     "./rational-matrix": "./src/rational-matrix.mjs",
+    "./deterministic-math": "./src/deterministic-math.mjs",
     "./exact-number-host": "./src/exact-number-host.mjs"
   },
   "files": [
