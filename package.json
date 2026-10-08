@@ -5,6 +5,7 @@
     "./decimal-string": "./src/decimal-string.mjs",
     "./graded": "./src/graded.mjs",
     "./quadratic": "./src/quadratic.mjs",
+    "./rational-matrix": "./src/rational-matrix.mjs",
     "./exact-number-host": "./src/exact-number-host.mjs"
   },
   "files": [
