@@ -1,8 +1,4 @@
 {
-  "name": "@red-cup-engineering/exact-number-data-service",
-  "version": "0.1.0",
-  "type": "module",
-  "private": false,
   "description": "Exact integer, rational and decimal-string arithmetic recovered from the machine snapshot.",
   "exports": {
     "./exact-number": "./src/exact-number.mjs",
@@ -15,6 +11,8 @@
     "src",
     "README.md"
   ],
+  "name": "@red-cup-engineering/exact-number-data-service",
+  "private": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/computer-data-services-section.git",
@@ -23,5 +21,7 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
-  }
+  },
+  "type": "module",
+  "version": "0.1.1"
 }
