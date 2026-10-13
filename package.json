@@ -17,7 +17,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/red-cup-engineering/computer-data-services-section.git",
+    "url": "git+https://github.com/red-cup-engineering/computer-data-engineering-services-section.git",
     "directory": "services/number-services-section/services/exact-number-data-service"
   },
   "scripts": {
@@ -27,3 +27,4 @@
   "type": "module",
   "version": "0.1.1"
 }
+
