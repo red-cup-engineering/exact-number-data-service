@@ -7,7 +7,8 @@
     "./quadratic": "./src/quadratic.mjs",
     "./rational-matrix": "./src/rational-matrix.mjs",
     "./deterministic-math": "./src/deterministic-math.mjs",
-    "./exact-number-host": "./src/exact-number-host.mjs"
+    "./exact-number-host": "./src/exact-number-host.mjs",
+    "./resource-measurement": "./src/resource-measurement.mjs"
   },
   "files": [
     "src",
@@ -27,4 +28,3 @@
   "type": "module",
   "version": "0.1.1"
 }
-
