@@ -211,7 +211,42 @@ export const fromRatio = (num, den) => rationalOf(hostInteger(num, "fromRatio"),
 /** Rows of host integers as an exact integer matrix. */
 export const fromInts = (rows) => Object.freeze(rows.map((row) => Object.freeze(row.map(fromInt))));
 /** A rational read as a host floating-point value (lossy). */
-export const toNumber = (q) => { const [n, d] = parts(q); return Number(n) / Number(d); };
+/** Source-owned rational to finite IEEE-754 binary64 projection.
+ * Recovered from SignGraph's original exact rational converter, which was
+ * not called by its numeric cellular-sheaf edge. Bounds and ties are explicit:
+ * overflow/underflow cannot silently turn nonzero exact incidence into zero.
+ */
+export function rationalToFiniteNumber(numerator, denominator) {
+  if (typeof numerator !== 'bigint' || typeof denominator !== 'bigint') {
+    throw new TypeError('exact rational numerator and denominator must be BigInt');
+  }
+  if (denominator === 0n) throw new RangeError('zero rational denominator');
+  if (numerator === 0n) return 0;
+  const negative = (numerator < 0n) !== (denominator < 0n);
+  const a = numerator < 0n ? -numerator : numerator;
+  const b = denominator < 0n ? -denominator : denominator;
+  let e = a.toString(2).length - b.toString(2).length;
+  if (e >= 0 ? a < (b << BigInt(e)) : (a << BigInt(-e)) < b) e -= 1;
+  if (e > 1023) throw new RangeError('exact rational exceeds finite binary64 range');
+  if (e < -1075) throw new RangeError('nonzero rational underflows binary64');
+  const s = e >= -1022 ? 52 - e : 1074;
+  const scaledNumerator = s >= 0 ? a << BigInt(s) : a;
+  const scaledDenominator = s < 0 ? b << BigInt(-s) : b;
+  let k = scaledNumerator / scaledDenominator;
+  const rem = scaledNumerator % scaledDenominator;
+  const twice = rem << 1n;
+  if (twice > scaledDenominator || (twice === scaledDenominator && (k & 1n) !== 0n)) k += 1n;
+  if (k === 0n) throw new RangeError('nonzero rational underflows binary64');
+  const result = Number(k) * 2 ** (-s);
+  if (!Number.isFinite(result) || result === 0) {
+    throw new RangeError('exact rational cannot be represented as a finite nonzero binary64 value');
+  }
+  return negative ? -result : result;
+}
+
+/** A rational read as one finite, nearest-even host number; refusal if
+ * the exact nonzero value has no finite nonzero binary64 representation. */
+export const toNumber = (q) => { const [n, d] = parts(q); return rationalToFiniteNumber(n, d); };
 
 // — exact integer matrices —
 
