@@ -8,7 +8,8 @@
     "./rational-matrix": "./src/rational-matrix.mjs",
     "./deterministic-math": "./src/deterministic-math.mjs",
     "./exact-number-host": "./src/exact-number-host.mjs",
-    "./resource-measurement": "./src/resource-measurement.mjs"
+    "./resource-measurement": "./src/resource-measurement.mjs",
+    "./framework-rigidity": "./src/framework-rigidity.mjs"
   },
   "files": [
     "src",
