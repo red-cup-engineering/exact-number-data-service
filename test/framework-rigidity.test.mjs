@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { frameworkRigidityReadout, frameworkRigidityRows } from "../src/framework-rigidity.mjs";
 import { ratRank } from "../src/rational-matrix.mjs";
 
@@ -67,4 +69,23 @@ test("no silent coordinate coercion, extra dimensions, duplicate or invalid edge
     [ordinary,[[0,"1"]]],
     [ordinary,null],
   ]) assert.throws(()=>frameworkRigidityReadout(vertices,contacts));
+});
+
+test("source-owned command consumes JSON coordinates and refuses invalid hypotheses", () => {
+  const cli = fileURLToPath(new URL("../bin/readout-framework-rigidity.mjs", import.meta.url));
+  const p = [[0,0],[2,0],[0,3],[3,4],[5,2]];
+  const A = [[0,1],[0,2],[1,2],[0,3],[1,3],[1,4],[2,4]];
+  const ok = spawnSync(process.execPath,[cli],{
+    input: JSON.stringify({vertices:p,contacts:A}),encoding:"utf8"
+  });
+  assert.equal(ok.status,0,ok.stderr);
+  const output = JSON.parse(ok.stdout);
+  assert.equal(output.rank,7);
+  assert.equal(output.spaceDimension,2);
+  const wrong = spawnSync(process.execPath,[cli],{
+    input: JSON.stringify({vertices:p,contacts:[[0,99]]}),encoding:"utf8"
+  });
+  assert.notEqual(wrong.status,0);
+  assert.equal(wrong.stdout,"");
+  assert.match(wrong.stderr,/exact framework rigidity refusal/);
 });
