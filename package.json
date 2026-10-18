@@ -13,7 +13,8 @@
   },
   "files": [
     "src",
-    "README.md"
+    "README.md",
+    "bin"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
   "private": false,
@@ -27,5 +28,8 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.2"
+  "version": "0.1.2",
+  "bin": {
+    "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
+  }
 }
