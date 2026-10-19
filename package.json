@@ -10,7 +10,8 @@
     "./exact-number-host": "./src/exact-number-host.mjs",
     "./resource-measurement": "./src/resource-measurement.mjs",
     "./framework-rigidity": "./src/framework-rigidity.mjs",
-    "./resource-flow": "./src/resource-flow.mjs"
+    "./resource-flow": "./src/resource-flow.mjs",
+    "./utc-windows": "./src/utc-windows.mjs"
   },
   "files": [
     "src",
@@ -29,7 +30,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   }

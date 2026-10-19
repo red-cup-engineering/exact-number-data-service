@@ -15,18 +15,13 @@
 import {admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
 import {gradedAdd,gradedCompare,gradedValue} from './graded.mjs';
 import {rationalParts} from './exact-number.mjs';
+import {UTC_WINDOWS,utcWindowsAt} from './utc-windows.mjs';
 
-export const RESOURCE_FLOW_WINDOWS=Object.freeze([
- Object.freeze({resolution:'second',milliseconds:1000}),
- Object.freeze({resolution:'minute',milliseconds:60000}),
- Object.freeze({resolution:'hour',milliseconds:3600000}),
- Object.freeze({resolution:'day',milliseconds:86400000})
-]);
+export const RESOURCE_FLOW_WINDOWS=UTC_WINDOWS;
 
 const NI=/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/u;
 const ACTOR=/^(?:actor:|urn:ame:)[^\s]+$/u;
 const UTC=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/u;
-const UTC_MILLISECONDS=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u;
 const invalid=reason=>{throw new TypeError('resource flow: '+reason)};
 const asActor=(value,name)=>{
  if(typeof value!=='string'||value.length>300||!ACTOR.test(value))
@@ -43,14 +38,6 @@ const instant=(value,name)=>{
  const parsed=Date.parse(value);
  if(!Number.isFinite(parsed)||new Date(parsed).toISOString()!==value)
   invalid(name+' is not a real canonical UTC instant');
- return parsed;
-};
-const eventInstant=(value)=>{
- if(typeof value!=='string'||!UTC_MILLISECONDS.test(value))
-  invalid('observedAt needs a canonical UTC millisecond timestamp');
- const parsed=Date.parse(value);
- if(!Number.isFinite(parsed)||new Date(parsed).toISOString()!==value)
-  invalid('observedAt is not a real canonical UTC instant');
  return parsed;
 };
 const exactAmount=value=>{
@@ -102,10 +89,7 @@ export function deriveResourceFlowReadings(samples){
   const measurements=admitResourceMeasurements(sample.measurements,
    {supplierActorRef,consumerActorRef});
   sourceContents.set(sample.sourceObservationAddress,serialized);
-  for(const {resolution,milliseconds} of RESOURCE_FLOW_WINDOWS){
-   const windowStart=Math.floor(start/milliseconds)*milliseconds;
-   const startAt=new Date(windowStart).toISOString();
-   const endAt=new Date(windowStart+milliseconds).toISOString();
+  for(const {resolution,milliseconds,startAt,endAt} of utcWindowsAt(sample.startAt)){
    for(const observed of measurements){
     const {resource,unit,gradedAmount}=observed;
     const aggregation=resource==='memory-peak'?'peak':'sum';
@@ -180,7 +164,6 @@ export function deriveResourceEventReadings(events){
     invalid('source address reused for a different event');
    continue;
   }
-  const recordedAt=eventInstant(event.observedAt);
   const feedRef=asFeed(event.feedRef);
   const resourceSubjectRef=event.resourceSubjectRef;
   if(typeof resourceSubjectRef!=='string'||!NI.test(resourceSubjectRef))
@@ -189,17 +172,16 @@ export function deriveResourceEventReadings(events){
    asActor(event.consumerActorRef,'consumerActorRef');
   const measured=admitResourceQuantities(event.measurements);
   sources.set(address,serialized);
-  for(const window of RESOURCE_FLOW_WINDOWS){
-   const start=Math.floor(recordedAt/window.milliseconds)*window.milliseconds;
+  for(const window of utcWindowsAt(event.observedAt)){
    for(const reading of measured){
     const {resource,unit,gradedAmount}=reading;
     const aggregation=resource==='memory-peak'?'peak':'sum';
-    const key=JSON.stringify([window.resolution,start,feedRef,resourceSubjectRef,
+    const key=JSON.stringify([window.resolution,window.startAt,feedRef,resourceSubjectRef,
      consumerActorRef??null,resource,unit,aggregation]);
     const found=windows.get(key);
     if(found===undefined)windows.set(key,{
-     resolution:window.resolution,startAt:new Date(start).toISOString(),
-     endAt:new Date(start+window.milliseconds).toISOString(),
+     resolution:window.resolution,startAt:window.startAt,
+     endAt:window.endAt,
      feedRef,resourceSubjectRef,consumerActorRef,resource,unit,aggregation,
      total:gradedAmount,sourceCount:1
     });
