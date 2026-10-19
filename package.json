@@ -22,8 +22,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/red-cup-engineering/computer-data-engineering-services-section.git",
-    "directory": "services/number-services-section/services/exact-number-data-service"
+    "url": "git+https://github.com/red-cup-engineering/exact-number-data-service.git"
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
