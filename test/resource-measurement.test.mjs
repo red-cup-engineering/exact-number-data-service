@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {gradedAdd,gradedToExactString} from '../src/graded.mjs';
-import {admitResourceMeasurement,admitResourceMeasurements}
+import {admitResourceQuantity,admitResourceQuantities,admitResourceMeasurement,admitResourceMeasurements}
  from '../src/resource-measurement.mjs';
 
 const actors={
@@ -116,3 +116,31 @@ test('CPU user and system time are distinct graded physical resources',()=>{
   /contradictory dimensions/u);
 });
 
+
+
+test('normalize exact source quantities independently before binding a genuine economic actor',()=>{
+ const bare=admitResourceQuantity(row('disk-write','bit','9'));
+ assert.equal(bare.unit,'By');
+ assert.deepEqual(bare.amount,amount('9','8'));
+ assert.equal(bare.evidenceStatus,'observed-quantity-unattributed-not-financial-settlement');
+ assert.equal(bare.gradedAmount.grade.includes('urn:ame:'),false);
+ const scoped=admitResourceMeasurement(row('disk-write','bit','9'),actors);
+ assert.deepEqual(scoped.amount,bare.amount);
+ assert.equal(scoped.gradedAmount.grade.includes(actors.consumerActorRef),true);
+ assert.throws(()=>gradedAdd(bare.gradedAmount,scoped.gradedAmount),/grade mismatch/u);
+ assert.throws(()=>admitResourceMeasurement(row('disk-write','byte','1')),
+  /supplying actor/u);
+});
+
+test('source quantity collections reject category aliases even with no identifiable consumer',()=>{
+ assert.deepEqual(admitResourceQuantities([
+  row('inference-cache-creation-input','token','7'),
+  row('inference-cache-read-input','{token}','8')
+ ]).map(x=>x.amount),[amount('7'),amount('8')]);
+ assert.throws(()=>admitResourceQuantities([
+  row('inference-cache-read-input','token','9'),
+  row('inference-cache-read-input','{token}','9')
+ ]),/duplicate canonical resource/u);
+ assert.throws(()=>admitResourceQuantity(row('inference-total','USD','99')),
+  /contradictory dimensions/u);
+});

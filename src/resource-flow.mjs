@@ -12,7 +12,7 @@
  * Every output advertises the number of seconds actually represented; absence
  * of a row means unobserved, NEVER zero consumption.
  */
-import {admitResourceMeasurements} from './resource-measurement.mjs';
+import {admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
 import {gradedAdd,gradedCompare,gradedValue} from './graded.mjs';
 import {rationalParts} from './exact-number.mjs';
 
@@ -26,6 +26,7 @@ export const RESOURCE_FLOW_WINDOWS=Object.freeze([
 const NI=/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/u;
 const ACTOR=/^(?:actor:|urn:ame:)[^\s]+$/u;
 const UTC=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z$/u;
+const UTC_MILLISECONDS=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u;
 const invalid=reason=>{throw new TypeError('resource flow: '+reason)};
 const asActor=(value,name)=>{
  if(typeof value!=='string'||value.length>300||!ACTOR.test(value))
@@ -44,11 +45,19 @@ const instant=(value,name)=>{
   invalid(name+' is not a real canonical UTC instant');
  return parsed;
 };
+const eventInstant=(value)=>{
+ if(typeof value!=='string'||!UTC_MILLISECONDS.test(value))
+  invalid('observedAt needs a canonical UTC millisecond timestamp');
+ const parsed=Date.parse(value);
+ if(!Number.isFinite(parsed)||new Date(parsed).toISOString()!==value)
+  invalid('observedAt is not a real canonical UTC instant');
+ return parsed;
+};
 const exactAmount=value=>{
  const [numerator,denominator]=rationalParts(gradedValue(value));
  return Object.freeze({numerator:numerator.toString(),denominator:denominator.toString()});
 };
-const order=(a,b)=>a.localeCompare(b,'en');
+const order=(a,b)=>a<b?-1:a>b?1:0;
 
 /**
  * Input: source-observation-addressed, one-second observations.
@@ -137,4 +146,87 @@ export function deriveResourceFlowReadings(samples){
   b.consumerActorRef,b.resource,b.unit
  ])));
  return Object.freeze(result);
+}
+
+
+/**
+ * Fold source-observed *events* into reporting windows without pretending
+ * they describe a uniformly sampled second. A provider token event or
+ * financial event is booked to its actual recorded event time, not stretched
+ * over a fictitious interval. This is a read-only exact numerical projection,
+ * neither a price conversion nor a financial ledger posting.
+ *
+ * Input event:
+ *  {sourceObservationAddress,observedAt,feedRef,resourceSubjectRef,
+ *   consumerActorRef?,measurements:[{resource,unit,amount}]}
+ *
+ * resourceSubjectRef identifies the original provider/session/account source
+ * entity by its existing semiotic address. consumerActorRef is optional until
+ * genuine corporate attribution exists; an absent actor is never invented.
+ */
+export function deriveResourceEventReadings(events){
+ if(!Array.isArray(events)||events.length>100000)
+  invalid('expected at most 100000 source events');
+ const sources=new Map(),windows=new Map();
+ for(const event of events){
+  if(event===null||typeof event!=='object'||Array.isArray(event))
+   invalid('source event must be an object');
+  const address=event.sourceObservationAddress;
+  if(typeof address!=='string'||!NI.test(address))
+   invalid('event needs its exact source observation address');
+  const serialized=JSON.stringify(event);
+  if(sources.has(address)){
+   if(sources.get(address)!==serialized)
+    invalid('source address reused for a different event');
+   continue;
+  }
+  const recordedAt=eventInstant(event.observedAt);
+  const feedRef=asFeed(event.feedRef);
+  const resourceSubjectRef=event.resourceSubjectRef;
+  if(typeof resourceSubjectRef!=='string'||!NI.test(resourceSubjectRef))
+   invalid('resourceSubjectRef needs the original source entity address');
+  const consumerActorRef=event.consumerActorRef===undefined?undefined:
+   asActor(event.consumerActorRef,'consumerActorRef');
+  const measured=admitResourceQuantities(event.measurements);
+  sources.set(address,serialized);
+  for(const window of RESOURCE_FLOW_WINDOWS){
+   const start=Math.floor(recordedAt/window.milliseconds)*window.milliseconds;
+   for(const reading of measured){
+    const {resource,unit,gradedAmount}=reading;
+    const aggregation=resource==='memory-peak'?'peak':'sum';
+    const key=JSON.stringify([window.resolution,start,feedRef,resourceSubjectRef,
+     consumerActorRef??null,resource,unit,aggregation]);
+    const found=windows.get(key);
+    if(found===undefined)windows.set(key,{
+     resolution:window.resolution,startAt:new Date(start).toISOString(),
+     endAt:new Date(start+window.milliseconds).toISOString(),
+     feedRef,resourceSubjectRef,consumerActorRef,resource,unit,aggregation,
+     total:gradedAmount,sourceCount:1
+    });
+    else{
+     found.total=aggregation==='peak'
+      ?(gradedCompare(found.total,gradedAmount)>=0?found.total:gradedAmount)
+      :gradedAdd(found.total,gradedAmount);
+     found.sourceCount++;
+    }
+   }
+  }
+ }
+ const output=[...windows.values()].map(v=>Object.freeze({
+  resolution:v.resolution,startAt:v.startAt,endAt:v.endAt,
+  feedRef:v.feedRef,resourceSubjectRef:v.resourceSubjectRef,
+  ...(v.consumerActorRef===undefined?{}:{consumerActorRef:v.consumerActorRef}),
+  resource:v.resource,unit:v.unit,aggregation:v.aggregation,
+  amount:exactAmount(v.total),sourceCount:v.sourceCount,
+  temporalBasis:'observed-event-time-not-interval-usage',
+  attribution:v.consumerActorRef===undefined?'consumer-unattributed':'consumer-source-attributed',
+  evidenceStatus:'derived-source-event-not-financial-posting'
+ }));
+ output.sort((a,b)=>order(
+  JSON.stringify([a.startAt,a.resolution,a.feedRef,a.resourceSubjectRef,
+   a.consumerActorRef??null,a.resource,a.unit]),
+  JSON.stringify([b.startAt,b.resolution,b.feedRef,b.resourceSubjectRef,
+   b.consumerActorRef??null,b.resource,b.unit])
+ ));
+ return Object.freeze(output);
 }

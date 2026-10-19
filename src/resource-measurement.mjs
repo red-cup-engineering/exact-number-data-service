@@ -27,7 +27,8 @@ const ratio=(num,den,resource,unit,supplier,consumer)=>{
  if(typeof num!=='string'||!DIGITS.test(num)||
     typeof den!=='string'||!/^[1-9][0-9]{0,127}$/u.test(den))
   invalid('exact resource quantity needs unsigned canonical decimal numerator and positive denominator');
- const grade=JSON.stringify(['resource',supplier,consumer,resource,unit]);
+ const grade=JSON.stringify(supplier===undefined?['resource-quantity',resource,unit]:
+  ['resource',supplier,consumer,resource,unit]);
  const measured=gradedFromParts(BigInt(num),BigInt(den),grade);
  if(gradedSign(measured)<0)invalid('consumed resource cannot be negative');
  return measured;
@@ -57,6 +58,10 @@ const KNOWN=Object.freeze({
  'inference-output':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
  'inference-cached-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
  'inference-reasoning-output':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
+ 'inference-cache-creation-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
+ 'inference-cache-read-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
+ 'inference-cache-write-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
+ 'inference-total':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
  energy:Object.freeze({joule:['J','1','1'],J:['J','1','1']}),
  'gpu-runtime':Object.freeze({millisecond:['s','1','1000'],ms:['s','1','1000'],s:['s','1','1']})
 });
@@ -67,16 +72,13 @@ const KNOWN=Object.freeze({
  * A new NI resource is an opaque, source-defined commodity; an unknown label
  * is not evidence that the commodity exists or has a recognized unit.
  */
-export function admitResourceMeasurement(row,{supplierActorRef,consumerActorRef}={}){
+/** Normalize an exact physical/inference quantity *before* economic attribution.
+ * Retain unknown ownership as unknown; never invent a surrogate actor. */
+export function admitResourceQuantity(row){
  if(row===null||typeof row!=='object'||Array.isArray(row))
   invalid('one measured resource row required');
  const resource=bounded(row.resource,'resource',120);
  const unit=bounded(row.unit,'unit',60);
- const supplier=bounded(supplierActorRef,'supplying actor');
- const consumer=bounded(consumerActorRef,'consuming actor');
- if(!/^(?:actor:|urn:ame:)[^\s]+$/u.test(supplier)||
-    !/^(?:actor:|urn:ame:)[^\s]+$/u.test(consumer))
-  invalid('actor origin must be an existing typed micro-enterprise actor');
  let target,opaque=false;
  if(Object.hasOwn(KNOWN,resource)){
   target=KNOWN[resource][unit];
@@ -95,10 +97,10 @@ export function admitResourceMeasurement(row,{supplierActorRef,consumerActorRef}
  const n=bounded(amount.numerator,'quantity numerator',128);
  const d=bounded(amount.denominator,'quantity denominator',128);
  // Exact-number graded arithmetic owns rational reduction and composition.
- const initial=ratio(n,d,resource,unit,supplier,consumer);
+ const initial=ratio(n,d,resource,unit);
  const [a,b]=rationalParts(gradedValue(initial));
  const measured=ratio((a*BigInt(scaleNum)).toString(),
-  (b*BigInt(scaleDen)).toString(),resource,canonicalUnit,supplier,consumer);
+  (b*BigInt(scaleDen)).toString(),resource,canonicalUnit);
  const [num,den]=rationalParts(gradedValue(measured));
  return Object.freeze({
   resource,unit:canonicalUnit,
@@ -106,20 +108,43 @@ export function admitResourceMeasurement(row,{supplierActorRef,consumerActorRef}
   gradedAmount:measured,
   ...(unit===canonicalUnit?{}:{sourceUnit:unit}),
   interpretation:opaque?'source-defined-opaque-unit':'recognized-physical-dimension',
-  evidenceStatus:'observed-quantity-not-financial-settlement'
+  evidenceStatus:'observed-quantity-unattributed-not-financial-settlement'
  });
 }
 
+/** Bind a normalized exact source quantity to genuine supplied actor origins.
+ * Unattributed quantities have a useful mathematical reading but cannot be
+ * mistaken for resource-account ownership without these origin references. */
+export function admitResourceMeasurement(row,{supplierActorRef,consumerActorRef}={}){
+ const supplier=bounded(supplierActorRef,'supplying actor');
+ const consumer=bounded(consumerActorRef,'consuming actor');
+ if(!/^(?:actor:|urn:ame:)[^\s]+$/u.test(supplier)||
+    !/^(?:actor:|urn:ame:)[^\s]+$/u.test(consumer))
+  invalid('actor origin must be an existing typed micro-enterprise actor');
+ const quantity=admitResourceQuantity(row);
+ const measured=ratio(quantity.amount.numerator,quantity.amount.denominator,
+  quantity.resource,quantity.unit,supplier,consumer);
+ return Object.freeze({...quantity,gradedAmount:measured,
+  evidenceStatus:'observed-quantity-not-financial-settlement'});
+}
+
 /** One exact resource/grade per period; source aliases cannot double-count. */
-export function admitResourceMeasurements(rows,actors){
+function admitResourceCollection(rows,admit){
  if(!Array.isArray(rows)||rows.length<1||rows.length>64)
   invalid('resource quantity collection must contain 1..64 bounded observations');
  const seen=new Set(),out=[];
  for(const value of rows){
-  const row=admitResourceMeasurement(value,actors);
+  const row=admit(value);
   const key=JSON.stringify([row.resource,row.unit]);
   if(seen.has(key))invalid('duplicate canonical resource and unit in one observation');
   seen.add(key);out.push(row);
  }
  return Object.freeze(out);
 }
+
+/** One canonical quantity per observed event, even before its responsible actor is known. */
+export const admitResourceQuantities=rows=>admitResourceCollection(rows,admitResourceQuantity);
+
+/** One canonical quantity per period, bound to actual supplier/consumer actors. */
+export const admitResourceMeasurements=(rows,actors)=>
+ admitResourceCollection(rows,row=>admitResourceMeasurement(row,actors));

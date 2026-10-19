@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {deriveResourceFlowReadings,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
+import {deriveResourceFlowReadings,deriveResourceEventReadings,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
 
 const ni=index=>'ni:///sha-256;'+String.fromCharCode(65+index).repeat(43);
 const amount=(numerator,denominator='1')=>({numerator,denominator});
@@ -110,4 +110,75 @@ test('refuses invalid time precision, dimensional misuse, missing actor and fict
   {...one,measurements:[meter('cpu-runtime','ms','10'),meter('cpu-runtime','s','1')]}
  ])assert.throws(()=>deriveResourceFlowReadings([changed]));
  assert.deepEqual(deriveResourceFlowReadings([]),[]);
+});
+
+
+const tokenEvent=(id,observedAt,amounts={},other={})=>({
+ sourceObservationAddress:ni(id),observedAt,
+ feedRef:'ni:///sha-256;'+'F'.repeat(43),
+ resourceSubjectRef:'ni:///sha-256;'+'S'.repeat(43),
+ measurements:Object.entries(amounts).map(([resource,numerator])=>meter(resource,'token',numerator)),
+ ...other
+});
+
+test('source event-time readings group token events without inventing uniform second usage',()=>{
+ const inputs=[
+  tokenEvent(0,'2026-10-18T20:03:00.127Z',{
+   'inference-input':'9007199254740993','inference-output':'2',
+   'inference-cached-input':'2'
+  }),
+  tokenEvent(1,'2026-10-18T20:03:00.832Z',{
+   'inference-input':'7','inference-output':'1',
+   'inference-cached-input':'1'
+  }),
+  tokenEvent(2,'2026-10-18T20:04:00.000Z',{'inference-input':'1'})
+ ];
+ const result=deriveResourceEventReadings(inputs);
+ assert.equal(result.filter(x=>x.resolution==='second'&&x.resource==='inference-input').length,2);
+ const seconds=result.filter(x=>x.resolution==='second'&&x.resource==='inference-input');
+ assert.deepEqual(seconds.find(x=>x.startAt==='2026-10-18T20:03:00.000Z').amount,
+  amount('9007199254741000'));
+ assert.equal(seconds[0].temporalBasis,'observed-event-time-not-interval-usage');
+ assert.equal(Object.hasOwn(seconds[0],'observedSeconds'),false);
+ const [hour]=result.filter(x=>x.resolution==='hour'&&x.resource==='inference-input');
+ assert.deepEqual(hour.amount,amount('9007199254741001'));
+ assert.equal(hour.attribution,'consumer-unattributed');
+ assert.equal(hour.sourceCount,3);
+ assert.equal(result.filter(x=>x.resolution==='hour'&&x.resource==='inference-output')[0].amount.numerator,'3');
+ assert.equal(result.filter(x=>x.resolution==='hour'&&x.resource==='inference-cached-input')[0].amount.numerator,'3');
+ assert.deepEqual(deriveResourceEventReadings([...inputs].reverse()),result);
+ assert.deepEqual(deriveResourceEventReadings([inputs[0],inputs[0]]),
+  deriveResourceEventReadings([inputs[0]]));
+});
+
+test('source event-time tokens retain category, consumer, provider/session and source-unit separation',()=>{
+ const src=tokenEvent(0,'2026-10-18T21:59:59.999Z',{
+  'inference-cache-creation-input':'5','inference-cache-read-input':'10'
+ });
+ const result=deriveResourceEventReadings([src,
+  tokenEvent(1,'2026-10-18T22:00:00.001Z',{'inference-cache-read-input':'3'},
+   {resourceSubjectRef:'ni:///sha-256;'+'T'.repeat(43)}),
+  tokenEvent(2,'2026-10-18T22:00:00.001Z',{'inference-cache-read-input':'2'},
+   {consumerActorRef:'urn:ame:known-agent'})
+ ]);
+ assert.equal(result.filter(x=>x.resolution==='minute').length,4);
+ assert.equal(result.filter(x=>x.resolution==='day'&&x.resource==='inference-cache-read-input').length,3);
+ assert.equal(result.find(x=>x.consumerActorRef==='urn:ame:known-agent')?.attribution,'consumer-source-attributed');
+});
+
+test('source event identity and exact timestamp admission refuse ambiguous or contradictory sources',()=>{
+ const a=tokenEvent(0,'2026-10-18T20:03:01.107Z',{'inference-input':'2'});
+ for(const bad of [
+  {...a,sourceObservationAddress:'unresolved'},
+  {...a,observedAt:'2026-10-18'},
+  {...a,observedAt:'2026-02-30T10:00:00.000Z'},
+  {...a,resourceSubjectRef:'unknown'},
+  {...a,consumerActorRef:'someone'},
+  {...a,measurements:[meter('inference-output','USD','5')]},
+  {...a,measurements:[meter('inference-output','token','5'),meter('inference-output','{token}','5')]}
+ ])assert.throws(()=>deriveResourceEventReadings([bad]));
+ assert.throws(()=>deriveResourceEventReadings([
+  a,{...a,measurements:[meter('inference-input','token','9')]}
+ ]),/source address reused/u);
+ assert.deepEqual(deriveResourceEventReadings([]),[]);
 });

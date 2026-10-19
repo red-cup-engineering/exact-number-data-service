@@ -29,7 +29,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   }

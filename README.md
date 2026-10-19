@@ -65,3 +65,42 @@ This package deliberately does not sample a host, post financial entries, price 
 
 from this package directory.
 
+
+
+## Exact event-time resource flows (0.1.4)
+
+\`./resource-measurement\` now exports \`admitResourceQuantity\` and
+\`admitResourceQuantities\`: a source-reported noncurrency quantity can be
+normalized and summed without inventing a supplier or economic beneficiary.
+The existing \`admitResourceMeasurement\` and
+\`admitResourceMeasurements\` independently require real actor references and
+retain their actor-specific quantity grades. Neither form posts a financial
+transaction.
+
+\`./resource-flow\` exports two different operations that must not be
+conflated:
+
+- \`deriveResourceFlowReadings\` receives actual aligned, measured one-second
+  **intervals** and reports measured coverage plus second/minute/hour/day
+  totals. It refuses unknown or fabricated second-level intervals.
+- \`deriveResourceEventReadings\` receives **discrete source events** with
+  \`sourceObservationAddress\`, \`observedAt\`, \`feedRef\`,
+  \`resourceSubjectRef\`, optional **actually known** \`consumerActorRef\`,
+  and measured quantities. It groups consumption by the *observed event
+  timestamp* at second/minute/hour/day granularity. Such sums are not
+  evidence of a smooth resource rate during the preceding second.
+
+Both normalize exact units and reject duplicate dimensions or conflicting
+reuses of source addresses. Provider token categories (\`inference-input\`,
+\`inference-output\`, \`inference-cached-input\`,
+\`inference-cache-creation-input\`, \`inference-cache-read-input\`,
+\`inference-cache-write-input\`, \`inference-reasoning-output\`,
+\`inference-total\`) remain distinct. Cache and reasoning components may be
+subsets, depending on the native provider; **summing these categories is
+not a valid total-token calculation**. Recording a token cost estimate is
+not evidence that an invoice was paid or a Group bookkeeper posted money.
+
+Event streams without a known customer actor retain
+\`attribution:consumer-unattributed\` in the projections, rather than
+fabricating one. These are reusable numerical projections: consumers supply
+genuine identified events from their own typed SEAVT storage.
