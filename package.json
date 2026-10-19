@@ -9,7 +9,8 @@
     "./deterministic-math": "./src/deterministic-math.mjs",
     "./exact-number-host": "./src/exact-number-host.mjs",
     "./resource-measurement": "./src/resource-measurement.mjs",
-    "./framework-rigidity": "./src/framework-rigidity.mjs"
+    "./framework-rigidity": "./src/framework-rigidity.mjs",
+    "./resource-flow": "./src/resource-flow.mjs"
   },
   "files": [
     "src",
@@ -28,7 +29,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   }

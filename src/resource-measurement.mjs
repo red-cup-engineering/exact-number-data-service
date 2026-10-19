@@ -40,13 +40,19 @@ const ratio=(num,den,resource,unit,supplier,consumer)=>{
 const KNOWN=Object.freeze({
  'cpu-runtime':Object.freeze({
   millisecond:['s','1','1000'],ms:['s','1','1000'],s:['s','1','1']}),
+ 'cpu-user-runtime':Object.freeze({
+  millisecond:['s','1','1000'],ms:['s','1','1000'],s:['s','1','1']}),
+ 'cpu-system-runtime':Object.freeze({
+  millisecond:['s','1','1000'],ms:['s','1','1000'],s:['s','1','1']}),
  'wall-runtime':Object.freeze({
   millisecond:['s','1','1000'],ms:['s','1','1000'],s:['s','1','1']}),
  'ram-residency':Object.freeze({
   'byte-second':['By.s','1','1'],'By.s':['By.s','1','1']}),
  'memory-peak':Object.freeze({byte:['By','1','1'],By:['By','1','1']}),
- 'network-egress':Object.freeze({byte:['By','1','1'],By:['By','1','1']}),
- 'network-ingress':Object.freeze({byte:['By','1','1'],By:['By','1','1']}),
+ 'disk-read':Object.freeze({byte:['By','1','1'],By:['By','1','1'],bit:['By','1','8']}),
+ 'disk-write':Object.freeze({byte:['By','1','1'],By:['By','1','1'],bit:['By','1','8']}),
+ 'network-egress':Object.freeze({byte:['By','1','1'],By:['By','1','1'],bit:['By','1','8']}),
+ 'network-ingress':Object.freeze({byte:['By','1','1'],By:['By','1','1'],bit:['By','1','8']}),
  'inference-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
  'inference-output':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),
  'inference-cached-input':Object.freeze({token:['{token}','1','1'],'{token}':['{token}','1','1']}),

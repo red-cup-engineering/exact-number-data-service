@@ -88,3 +88,31 @@ test('bounded rational arithmetic accepts beyond IEEE exact integer range withou
   resource:'cpu-runtime',unit:'s',amount:0.1},actors),
   /exact numerator and denominator/u);
 });
+
+test('native disk and network bits normalize exactly into bytes',()=>{
+ const readings=admitResourceMeasurements([
+  row('disk-read','bit','15'),
+  row('disk-write','byte','4096'),
+  row('network-egress','bit','1')
+ ],actors);
+ assert.deepEqual(readings.map(x=>x.unit),['By','By','By']);
+ assert.deepEqual(readings.map(x=>x.amount),[
+  amount('15','8'),amount('4096'),amount('1','8')
+ ]);
+ assert.throws(()=>admitResourceMeasurements([
+  row('disk-write','byte','1'),row('disk-write','bit','8')
+ ],actors),/duplicate canonical resource and unit/u);
+});
+
+test('CPU user and system time are distinct graded physical resources',()=>{
+ const readings=admitResourceMeasurements([
+  row('cpu-user-runtime','ms','1500'),
+  row('cpu-system-runtime','s','1','4')
+ ],actors);
+ assert.deepEqual(readings.map(x=>x.amount),[amount('3','2'),amount('1','4')]);
+ assert.throws(()=>gradedAdd(readings[0].gradedAmount,readings[1].gradedAmount),
+  /grade mismatch/u);
+ assert.throws(()=>admitResourceMeasurement(row('disk-read','USD','1'),actors),
+  /contradictory dimensions/u);
+});
+

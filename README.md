@@ -46,3 +46,22 @@ measurement, coordinate provenance and physical receiving remain separate.
 The source export and command are new; registry publication and dependent
 installation are not established by a source commit.
 
+## Resource flow over observed seconds
+
+The original "./resource-measurement" export admits graded noncurrency quantities with exact rational units. It recognizes disk reads/writes, network ingress/egress, CPU user/system/runtime, RAM residency and peak, inference token classes, energy and GPU runtime. Bit and byte amounts normalize to exact bytes; milliseconds normalize to exact seconds. No token-to-money or physical-to-money exchange rate is inferred.
+
+The new "./resource-flow" export provides deriveResourceFlowReadings(sourceObservations), a pure projection of the **original source observations**, not a competing journal or book. A caller supplies observations with these fields:
+
+- sourceObservationAddress: existing ni:///sha-256 reference to the original observation; repeated identical source records are idempotent and conflicting reuse fails.
+- startAt and endAt: consecutive canonical UTC seconds, representing an actual one-second meter interval, never an interpolated job duration.
+- feedRef, serviceActorRef, supplierActorRef and consumerActorRef: source feed, running service and typed micro-enterprise actor references, so independent resource streams cannot silently mix.
+- measurements: admitted {resource,unit,amount:{numerator,denominator}} physical or inference-token quantities. Each measurement is checked by the shared exact-number resource admission.
+
+The function returns a deterministic array of second, minute, hour and day UTC readings. Each retains the feed and actor coordinates; amount stays an exact rational with its own canonical unit; aggregation is sum except memory-peak, which uses peak; observedSeconds exposes the actual represented interval coverage, windowSeconds the whole window duration, and sourceCount counts distinct original observation inputs. Missing seconds produce no imaginary zero events, and unrelated commodities never combine. Consumers can pivot these readings by service or actor without retaining four materialized copies of each source sample.
+
+This package deliberately does not sample a host, post financial entries, price CPU, authorize spending, or change the Group's canonical Beancount ledger. Those duties belong to the original host's meter/SEAVT carrier, accounting producer, and independent Group bookkeeper. For a native local qualification run, execute:
+
+    node --test test/resource-measurement.test.mjs test/resource-flow.test.mjs
+
+from this package directory.
+
