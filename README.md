@@ -334,3 +334,32 @@ refusal, nonadditive peak and overlapping token category independence,
 missing/zero output, invalid/mismatched timestamps and unit identities.
 Those are native source tests with controlled fixtures, not observations
 of current production energy or independently received services.
+
+
+## Actual package fabrication and independent local receiving
+
+This source owner now has a native
+[\`scripts/assay-resource-flow-package.mjs\`](scripts/assay-resource-flow-package.mjs)
+which tests more than source parsing or a mocked in-repository import. It
+executes the **original npm package maker** twice on the same exact checked-out
+source with offline, no-scripts constraints; refuses nonidentical complete
+archive SHA-256 bytes; installs one produced \`.tgz\` into an independent
+temporary Node package with **offline**, **no scripts**, **no audits** and
+**no fund/network**; and imports the actual
+\`@red-cup-engineering/exact-number-data-service/resource-flow\` export
+from that installed artifact. The consumer executes a positive comparison,
+deduplication test and adverse reused-source test using the installed
+artifact, not the checkout.
+
+Run \`node scripts/assay-resource-flow-package.mjs\` at this repository's
+source revision. Native GitHub Actions
+[\`resource-flow-contract.yml\`](.github/workflows/resource-flow-contract.yml)
+tests this artifact boundary alongside complete source package tests.
+The emitted SHA-256 is a **CI runner's locally fabricated artifact receipt**,
+not a published package hash or a claim that Cold Red Gate selected it. A
+source branch must first pass both independent pack and installed-isolate
+receiving; making that result an actual immutable source-tagged release,
+publishing through the original registry, selecting that release in FeltOS,
+installing on a host and independently receiving real Work are **separate,
+still-unfulfilled gates**. No measured production energy reduction is
+inferred from the reproducibility of a tarball.
