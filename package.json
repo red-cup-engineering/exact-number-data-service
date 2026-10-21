@@ -32,5 +32,10 @@
   "version": "0.1.5",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
+  },
+  "license": "MIT",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
   }
 }
