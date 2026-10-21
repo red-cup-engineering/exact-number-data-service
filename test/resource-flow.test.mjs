@@ -349,7 +349,7 @@ const intensity=(first,second,before,after,other={})=>
 test('higher total joules can have lower exact joules per reported accepted result',()=>{
  const b=sample(0,comparisons.baselineStartAt,[meter('energy','J','100')]);
  const a=sample(1,comparisons.successorStartAt,[meter('energy','joule','120')]);
- const r=intensity([b],[a],reportedOutcome(30,'1'),reportedOutcome(31,'2'));
+ const r=intensity([b],[a],reportedOutcome(30,'1'),reportedOutcome(32,'2'));
  assert.equal(r.kind,'source-window-reported-functional-intensity-reading');
  assert.equal(r.qualifiedIntensityCount,1);
  assert.equal(r.unqualifiedIntensityCount,0);
@@ -372,7 +372,7 @@ test('higher total joules can have lower exact joules per reported accepted resu
 test('lower total input can still worsen resource intensity per result',()=>{
  const b=sample(0,comparisons.baselineStartAt,[meter('energy','J','100')]);
  const a=sample(1,comparisons.successorStartAt,[meter('energy','J','80')]);
- const [x]=intensity([b],[a],reportedOutcome(30,'2'),reportedOutcome(31,'1')).readings;
+ const [x]=intensity([b],[a],reportedOutcome(30,'2'),reportedOutcome(32,'1')).readings;
  assert.equal(x.direction,'decrease');
  assert.equal(x.intensityDirection,'increase');
  assert.deepEqual(x.baselinePerReportedAcceptedUnit,amount('50'));
@@ -386,11 +386,11 @@ test('zero reported accepted work, nonadditive gauge, and absent dimension refus
   meter('energy','J','25'),meter('memory-peak','By','100'),meter('disk-read','By','50')]);
  const after=sample(1,comparisons.successorStartAt,[
   meter('energy','J','20'),meter('memory-peak','By','90')]);
- const zero=intensity([before],[after],reportedOutcome(30,'0'),reportedOutcome(31,'1'));
+ const zero=intensity([before],[after],reportedOutcome(30,'0'),reportedOutcome(32,'1'));
  assert.equal(zero.qualifiedIntensityCount,0);
  assert.ok(zero.readings.every(x=>!Object.hasOwn(x,'successorOverBaselineIntensity')));
  assert.equal(zero.readings.find(x=>x.resource==='energy').intensityStatus,'zero-reported-accepted-output');
- const result=intensity([before],[after],reportedOutcome(30,'1'),reportedOutcome(31,'1'));
+ const result=intensity([before],[after],reportedOutcome(30,'1'),reportedOutcome(32,'1'));
  assert.equal(result.qualifiedIntensityCount,1);
  assert.equal(result.unqualifiedIntensityCount,2);
  assert.equal(result.readings.find(x=>x.resource==='memory-peak').intensityStatus,
@@ -404,7 +404,7 @@ test('zero reported accepted work, nonadditive gauge, and absent dimension refus
 test('unobserved seconds never become measured normalized savings',()=>{
  const b=sample(0,'2026-10-18T20:03:00.000Z',[meter('energy','J','100')]);
  const a=sample(1,'2026-10-18T20:04:00.000Z',[meter('energy','J','70')]);
- const comparison=intensity([b],[a],reportedOutcome(30,'2'),reportedOutcome(31,'2'),{
+ const comparison=intensity([b],[a],reportedOutcome(30,'2'),reportedOutcome(32,'2'),{
   resolution:'minute',baselineStartAt:'2026-10-18T20:03:00.000Z',
   successorStartAt:'2026-10-18T20:04:00.000Z'
  });
@@ -416,7 +416,7 @@ test('unobserved seconds never become measured normalized savings',()=>{
 test('different functional unit, reused source, malformed quantity and absent report refuse',()=>{
  const b=sample(0,comparisons.baselineStartAt,[meter('energy','J','100')]);
  const a=sample(1,comparisons.successorStartAt,[meter('energy','J','50')]);
- const p=reportedOutcome(30,'1'),q=reportedOutcome(31,'1');
+ const p=reportedOutcome(30,'1'),q=reportedOutcome(32,'1');
  for(const [badBefore,badAfter] of [
   [p,{...q,functionalUnitRef:ni(36)}],
   [p,{...q,sourceEvidenceRef:p.sourceEvidenceRef}],
@@ -431,7 +431,7 @@ test('different functional unit, reused source, malformed quantity and absent re
 test('zero baseline consumption has exact absolute intensity change but no invented relative percent',()=>{
  const b=sample(0,comparisons.baselineStartAt,[meter('energy','J','0')]);
  const a=sample(1,comparisons.successorStartAt,[meter('energy','J','10')]);
- const [reading]=intensity([b],[a],reportedOutcome(30,'1'),reportedOutcome(31,'2')).readings;
+ const [reading]=intensity([b],[a],reportedOutcome(30,'1'),reportedOutcome(32,'2')).readings;
  assert.deepEqual(reading.baselinePerReportedAcceptedUnit,amount('0'));
  assert.deepEqual(reading.successorPerReportedAcceptedUnit,amount('5'));
  assert.deepEqual(reading.differencePerReportedAcceptedUnit,amount('5'));
