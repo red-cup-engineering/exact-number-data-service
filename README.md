@@ -246,3 +246,91 @@ source-level cases—not real accepted Work receipts.
 Run \`npm test\` on this exact package and read the changed source back.
 Package publication, installation into FeltOS/Cold Red Gate, actual operation
 and independent beneficial outcomes remain further explicit gates.
+
+
+## Event-time efficiency without false second-level coverage
+
+**Consumer and source:** FeltOS's existing
+\`agent-session-token-usage-flow\` reads individual source-identified provider
+turn **events**, and the original \`deriveResourceEventReadings\` folds them by
+their event timestamps. Their clock positions are *not* one-second duration
+samples. The previous \`compareResourceFlowIntensityWindows\` is specifically
+for fully observed one-second **interval** meters; it must not be applied to
+these event populations by inventing a 60-second usage vector. The original
+[Coesite resource-flow Tune-up #293](https://github.com/coesite-operations/operations-services-section/issues/293),
+[Engineering four-stage requirement #137](https://github.com/red-cup-engineering/engineering-services-section/issues/137)
+and [FeltOS original Source turn normalization PR #157](https://github.com/red-cup-engineering/feltos/pull/157)
+supply the Work and producer/consumer identities.
+
+This module now exports \`compareResourceEventIntensityWindows\`, a separate
+read-only *conditional* source-event-to-reported-functional-unit comparison
+using the **existing** \`deriveResourceEventReadings\` and exact graded
+arithmetic. It does not create an alternative metering registry, ledger,
+tenant authority or admitted Work acceptance.
+
+**EB-01 — Correct time semantics.** Accept two original event populations
+from disjoint, ordered UTC source-event windows and source-defined subjects.
+Use their actual discrete \`observedAt\` stamps. Preserve distinct inference
+input/output/cached/reasoning/total grades; no inference interval, physical
+joules, monetary price, complete observation set or additive total of
+overlapping token categories is invented.
+
+**EB-02 — Stable identity, original coverage.** Reused original source IDs
+in one population are deduplicated by the incumbent event fold; conflicting
+source IDs refuse. Reuse *across* different windows refuses. Source timestamps
+outside declared windows, differently scoped source subjects and invalid
+units refuse. Event count is a reading of supplied source events, **not**
+proof that every event in a provider/session interval was acquired.
+
+**EB-03 — Consumer and source separation.** Preserve original source-subject
+identity, feed, consumer Actor (if actually known), resource grade and unit.
+Two unlike subject identities require an explicit *caller-reported* matching
+reference, not an inferred join. Different or missing consumer Actors do not
+yield a corporate per-result efficiency comparison. The NI syntax of the
+matching reference does not prove underlying same-purpose, same-quality,
+same-provider or same-rights comparison.
+
+**EB-04 — Functional denominator.** Both outcomes require the same original
+functional-unit NI and separate source-evidence references with exact
+nonnegative rational reported accepted-unit amounts. Zero output, absent
+event category, unknown consumer or a nonadditive maximum withhold normalized
+results, not convenience zero. Each admissible recorded grade returns
+exact baseline/successor resource totals, signed **total** difference,
+per-reported-outcome intensities, signed intensity difference and
+successor/baseline intensity ratio only when that baseline is nonzero.
+
+**EB-05 — Conditional, never independently qualified here.** The return
+kind \`source-event-window-conditional-resource-intensity-reading\` marks
+\`sourceEventCollectionCompletenessVerified:false\`,
+\`sourceAndFunctionalEquivalenceIndependentlyVerified:false\` and
+\`requirementOrEngineeringAcceptanceClaimAllowed:false\`. Its calculated
+difference is **only for the recorded event subset and caller-reported
+output**. Neither provider completeness nor beneficiary acceptance can be
+self-attested through this pure numerical operation. To derive a live
+efficiency Requirement, the actual original assayer must separately
+qualify: exact event provenance and full acquisition scope, independent
+accepted useful outcome count, same function/quality, stable rights and
+reference workload, and full resource displacement/rebound. Then carry
+the original Requirement through **Specifying → Architecting → Designing →
+Fabricating**, select and install the resulting producer, and remeasure
+a matched real service with independent receiving.
+
+**EB-06 — Different consumers retain different evidence.** Existing
+one-second power/CPU/bytes interval meters continue to use
+\`compareResourceFlowIntensityWindows\`. Native provider inference
+token/event measurements use this event-specific view *only after the new
+compatible package export is genuinely installed*. A source commit, 0.1.5
+package manifest, passing CI, or an NI-shaped reference does not establish
+registry publication or FeltOS consuming this revision. FeltOS currently
+declares the older 0.1.4 dependency; publication, reproducible install,
+consumer acceptance, first real full-coverage measurement and beneficiary
+outcome remain distinct required receiving.
+
+**Verification:** \`npm test\` runs original interval, event, rational
+and unit admission suites. The new event fixtures require total use and
+per-reported-outcome efficiency to disagree in either direction, stable
+deduplication under replay/permutation, cross-Actor and cross-subject
+refusal, nonadditive peak and overlapping token category independence,
+missing/zero output, invalid/mismatched timestamps and unit identities.
+Those are native source tests with controlled fixtures, not observations
+of current production energy or independently received services.

@@ -369,12 +369,9 @@ export function compareResourceFlowWindows({
  * rebound can raise total use when input intensity falls. Nonadditive gauges,
  * unknown meter coverage and zero accepted output NEVER produce a ratio.
  */
-export function compareResourceFlowIntensityWindows({
- baselineObservations,successorObservations,
- baselineStartAt,successorStartAt,resolution,comparisonRef,
- matchedWorkEvidenceRef,baselineOutcome,successorOutcome
-}={}){
- const outcome=(value,name)=>{
+
+// Source-only quantity admission shared by interval and event-time intensity.
+const admitReportedOutcome=(value,name)=>{
   if(value===null||typeof value!=='object'||Array.isArray(value)||
      Object.keys(value).sort().join(',')!=='acceptedUnits,functionalUnitRef,sourceEvidenceRef')
    invalid(name+' must carry reported acceptedUnits and two source addresses only');
@@ -399,6 +396,13 @@ export function compareResourceFlowIntensityWindows({
    sourceQualification:'caller-reported-evidence-locator-not-independently-verified'
   });
  };
+
+export function compareResourceFlowIntensityWindows({
+ baselineObservations,successorObservations,
+ baselineStartAt,successorStartAt,resolution,comparisonRef,
+ matchedWorkEvidenceRef,baselineOutcome,successorOutcome
+}={}){
+ const outcome=admitReportedOutcome;
  const beforeOutcome=outcome(baselineOutcome,'baselineOutcome');
  const afterOutcome=outcome(successorOutcome,'successorOutcome');
  if(beforeOutcome.functionalUnitRef!==afterOutcome.functionalUnitRef)
@@ -476,5 +480,183 @@ export function compareResourceFlowIntensityWindows({
   independentFunctionalEquivalenceAndAcceptanceVerified:false,
   requirementOrEngineeringAcceptanceClaimAllowed:false,
   evidenceStatus:'exact-source-and-caller-reported-outcome-normalization-only'
+ });
+}
+
+
+/**
+ * Exact recorded EVENT-TIME consumption per caller-reported accepted result.
+ *
+ * This differs from compareResourceFlowIntensityWindows: discrete inference
+ * events cannot be smeared into 1s samples or inferred to cover all seconds.
+ * Source-event collection completeness, accepted output provenance and equal
+ * quality/workload are NOT established by a content-address-shaped locator.
+ * This is a read-only arithmetic projection over original event observations.
+ *
+ * Baseline and successor event populations must be explicitly scoped to their
+ * original source subjects and distinct, disjoint, canonical UTC windows.
+ * Distinct subjects require a caller-reported matching-evidence locator.
+ * The matched scope is still not independently assayed by this producer.
+ *
+ * No ledger posting, acceptance, causal savings or refabrication permission.
+ */
+export function compareResourceEventIntensityWindows({
+ baselineEvents,successorEvents,
+ baselineSourceSubjectRef,successorSourceSubjectRef,
+ baselineStartAt,successorStartAt,resolution,comparisonRef,
+ matchedSourceEvidenceRef,baselineOutcome,successorOutcome
+}={}){
+ if(!Array.isArray(baselineEvents)||!Array.isArray(successorEvents))
+  invalid('event intensity needs two source event populations');
+ if(typeof comparisonRef!=='string'||!NI.test(comparisonRef))
+  invalid('event intensity requires source-owned comparisonRef NI');
+ for(const [name,ref] of [
+  ['baselineSourceSubjectRef',baselineSourceSubjectRef],
+  ['successorSourceSubjectRef',successorSourceSubjectRef]
+ ]){
+  if(typeof ref!=='string'||!NI.test(ref))
+   invalid(name+' requires one exact original source subject NI');
+ }
+ if(matchedSourceEvidenceRef!==undefined&&
+    (typeof matchedSourceEvidenceRef!=='string'||!NI.test(matchedSourceEvidenceRef)))
+  invalid('matchedSourceEvidenceRef must be a source NI');
+ const firstOutcome=admitReportedOutcome(baselineOutcome,'baselineOutcome');
+ const secondOutcome=admitReportedOutcome(successorOutcome,'successorOutcome');
+ if(firstOutcome.functionalUnitRef!==secondOutcome.functionalUnitRef)
+  invalid('event intensity cannot compare different reported functional units');
+ if(firstOutcome.sourceEvidenceRef===secondOutcome.sourceEvidenceRef)
+  invalid('event intensity cannot reuse accepted-outcome source evidence');
+ const classOfWindow=RESOURCE_FLOW_WINDOWS.find(x=>x.resolution===resolution);
+ if(!classOfWindow)invalid('event intensity requires named UTC window resolution');
+ const window=(value,name)=>{
+  instant(value,name);
+  const found=utcWindowsAt(value).find(x=>x.resolution===resolution);
+  if(found.startAt!==value)invalid(name+' must align to original UTC window');
+  return found;
+ };
+ const beforeWindow=window(baselineStartAt,'baselineStartAt');
+ const afterWindow=window(successorStartAt,'successorStartAt');
+ if(Date.parse(beforeWindow.endAt)>Date.parse(afterWindow.startAt))
+  invalid('event intensity requires disjoint chronologically ordered windows');
+ const validatePopulation=(events,subject,selected,name)=>{
+  for(const event of events){
+   if(event?.resourceSubjectRef!==subject)
+    invalid(name+' includes a different original source subject');
+   // The source fold, not this adapter, authenticates time syntax and units.
+   const observed=utcWindowsAt(event.observedAt);
+   if(!observed.some(x=>x.resolution===resolution&&x.startAt===selected.startAt))
+    invalid(name+' contains an event outside its declared window');
+  }
+  return deriveResourceEventReadings(events)
+   .filter(x=>x.resolution===resolution&&x.startAt===selected.startAt&&
+    x.resourceSubjectRef===subject);
+ };
+ const before=validatePopulation(baselineEvents,baselineSourceSubjectRef,beforeWindow,
+  'baselineEvents');
+ const after=validatePopulation(successorEvents,successorSourceSubjectRef,afterWindow,
+  'successorEvents');
+ // One source event cannot count in both disjoint event populations.
+ const beforeIds=new Set(baselineEvents.map(x=>x.sourceObservationAddress));
+ if(successorEvents.some(x=>beforeIds.has(x.sourceObservationAddress)))
+  invalid('event intensity populations reuse an original source event identity');
+ const key=row=>JSON.stringify([
+  row.feedRef,row.consumerActorRef??null,row.resource,row.unit,row.aggregation
+ ]);
+ const left=new Map(before.map(row=>[key(row),row]));
+ const right=new Map(after.map(row=>[key(row),row]));
+ if(left.size!==before.length||right.size!==after.length)
+  invalid('event intensity has ambiguous source dimension coordinates');
+ const keys=[...new Set([...left.keys(),...right.keys()])].sort(order);
+ if(keys.length>512)invalid('event intensity exceeds bounded compared dimensions');
+ const sameSubject=baselineSourceSubjectRef===successorSourceSubjectRef;
+ const matchedSource=sameSubject||matchedSourceEvidenceRef!==undefined;
+ const withoutOutput=firstOutcome.acceptedUnits.numerator==='0'||
+  secondOutcome.acceptedUnits.numerator==='0';
+ const unit=firstOutcome.functionalUnitRef;
+ const earlierCount=gradedFromParts(
+  BigInt(firstOutcome.acceptedUnits.numerator),
+  BigInt(firstOutcome.acceptedUnits.denominator),
+  'reported-functional-output:'+unit);
+ const laterCount=gradedFromParts(
+  BigInt(secondOutcome.acceptedUnits.numerator),
+  BigInt(secondOutcome.acceptedUnits.denominator),
+  'reported-functional-output:'+unit);
+ const exact=graded=>{
+  const [numerator,denominator]=rationalParts(gradedValue(graded));
+  return Object.freeze({numerator:numerator.toString(),denominator:denominator.toString()});
+ };
+ const readings=keys.map(dimension=>{
+  const b=left.get(dimension),a=right.get(dimension),row=b??a;
+  const baseline=b?Object.freeze({amount:b.amount,sourceCount:b.sourceCount}):null;
+  const successor=a?Object.freeze({amount:a.amount,sourceCount:a.sourceCount}):null;
+  const common={feedRef:row.feedRef,
+   baselineSourceSubjectRef,successorSourceSubjectRef,
+   ...(row.consumerActorRef===undefined?{}:{consumerActorRef:row.consumerActorRef}),
+   resource:row.resource,unit:row.unit,aggregation:row.aggregation,
+   baseline,successor,
+   eventTemporalBasis:'original-discrete-source-event-time-not-second-interval-coverage'};
+  if(!b||!a)return Object.freeze({...common,
+   intensityStatus:'unobserved-event-dimension-on-one-side'});
+  if(row.aggregation!=='sum')return Object.freeze({...common,
+   intensityStatus:'nonadditive-gauge-not-input-intensity'});
+  if(!matchedSource)return Object.freeze({...common,
+   intensityStatus:'source-subject-equivalence-evidence-missing'});
+  if(row.consumerActorRef===undefined)return Object.freeze({...common,
+   intensityStatus:'consumer-actor-unattributed'});
+  if(withoutOutput)return Object.freeze({...common,
+   intensityStatus:'zero-reported-accepted-output'});
+  const inputGrade='event-resource:'+JSON.stringify([
+   row.feedRef,row.consumerActorRef,row.resource,row.unit
+  ]);
+  const quantity=x=>gradedFromParts(BigInt(x.amount.numerator),
+   BigInt(x.amount.denominator),inputGrade);
+  const prior=quantity(b),next=quantity(a);
+  const totalDifference=gradedSubtract(next,prior);
+  const previousIntensity=gradedQuotient(prior,earlierCount,
+   'recorded-event-input-per-reported-output:'+inputGrade+':'+unit);
+  const nextIntensity=gradedQuotient(next,laterCount,
+   'recorded-event-input-per-reported-output:'+inputGrade+':'+unit);
+  const difference=gradedSubtract(nextIntensity,previousIntensity);
+  const [sign]=rationalParts(gradedValue(difference));
+  const [baseNumerator]=rationalParts(gradedValue(previousIntensity));
+  const rawRatio=baseNumerator===0n?null:gradedRatio(nextIntensity,previousIntensity);
+  const relative=rawRatio===null?null:(()=>{
+   const [numerator,denominator]=rationalParts(rawRatio);
+   return Object.freeze({numerator:numerator.toString(),
+    denominator:denominator.toString()});
+  })();
+  return Object.freeze({...common,
+   totalRecordedEventDifference:exact(totalDifference),
+   baselinePerReportedAcceptedUnit:exact(previousIntensity),
+   successorPerReportedAcceptedUnit:exact(nextIntensity),
+   differencePerReportedAcceptedUnit:exact(difference),
+   successorOverBaselineIntensity:relative,
+   intensityDirection:sign<0n?'decrease':sign>0n?'increase':'unchanged',
+   intensityStatus:'conditional-source-event-subset-not-complete-or-receiver-verified'});
+ });
+ return Object.freeze({
+  kind:'source-event-window-conditional-resource-intensity-reading',
+  comparisonRef,resolution,
+  baselineStartAt:beforeWindow.startAt,baselineWindowEndAt:beforeWindow.endAt,
+  successorStartAt:afterWindow.startAt,successorWindowEndAt:afterWindow.endAt,
+  baselineSourceSubjectRef,successorSourceSubjectRef,
+  matchedSourceEvidenceRef:matchedSourceEvidenceRef??null,
+  matchedSourceEvidenceStatus:matchedSourceEvidenceRef===undefined
+   ?'no-caller-reported-subject-matching-reference'
+   :'caller-reported-subject-matching-reference-not-independently-verified',
+  baselineSourceEventCount:beforeIds.size,
+  successorSourceEventCount:new Set(successorEvents.map(x=>x.sourceObservationAddress)).size,
+  baselineOutcome:firstOutcome,successorOutcome:secondOutcome,
+  readings:Object.freeze(readings),
+  conditionalIntensityCount:readings.filter(x=>
+   x.intensityStatus==='conditional-source-event-subset-not-complete-or-receiver-verified'
+  ).length,
+  withheldIntensityCount:readings.filter(x=>
+   x.intensityStatus!=='conditional-source-event-subset-not-complete-or-receiver-verified'
+  ).length,
+  sourceEventCollectionCompletenessVerified:false,
+  sourceAndFunctionalEquivalenceIndependentlyVerified:false,
+  requirementOrEngineeringAcceptanceClaimAllowed:false,
+  evidenceStatus:'exact-recorded-event-arithmetic-only-neither-complete-population-nor-received-work'
  });
 }
