@@ -303,7 +303,7 @@ test('source identity, incompatible time scope and nonphysical money inputs refu
   /reuse an original source observation identity/u);
  assert.throws(()=>compare([a],[b],{resolution:'invalid'}),/named UTC window/u);
  assert.throws(()=>compare([a],[b],{baselineStartAt:'2026-10-18T20:03:00Z'}),
-  /canonical UTC/u);
+  /exact UTC seconds/u);
  assert.throws(()=>compare([a],[b],{resolution:'minute',
   baselineStartAt:'2026-10-18T20:03:01.000Z'}),/must be aligned/u);
  assert.throws(()=>compare([a],[b],{successorStartAt:comparisons.baselineStartAt}),
