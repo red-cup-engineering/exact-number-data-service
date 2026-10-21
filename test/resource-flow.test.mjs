@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {deriveResourceFlowReadings,deriveResourceEventReadings,compareResourceFlowWindows,compareResourceFlowIntensityWindows,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
+import {deriveResourceFlowReadings,deriveResourceEventReadings,compareResourceFlowWindows,compareResourceFlowIntensityWindows,compareResourceEventIntensityWindows,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
 
 const ni=index=>'ni:///sha-256;'+String.fromCharCode(65+index).repeat(43);
 const amount=(numerator,denominator='1')=>({numerator,denominator});
@@ -436,4 +436,175 @@ test('zero baseline consumption has exact absolute intensity change but no inven
  assert.deepEqual(reading.successorPerReportedAcceptedUnit,amount('5'));
  assert.deepEqual(reading.differencePerReportedAcceptedUnit,amount('5'));
  assert.equal(reading.successorOverBaselineIntensity,null);
+});
+
+
+// Original provider event-time resource metrology; the native Event consumer
+// records token events at instants, not a fabricated 1-second energy trace.
+const EVENT_BASELINE='2026-10-18T20:03:00.000Z';
+const EVENT_SUCCESSOR='2026-10-18T20:04:00.000Z';
+const EVENT_SUBJECT='ni:///sha-256;'+'S'.repeat(43);
+const eventInput=(id,at,measures,more={})=>tokenEvent(id,at,measures,{
+ consumerActorRef:'urn:ame:agent-one',...more
+});
+const eventIntensity=(before,after,beforeOutcome,afterOutcome,extra={})=>
+ compareResourceEventIntensityWindows({
+  baselineEvents:before,successorEvents:after,
+  baselineStartAt:EVENT_BASELINE,successorStartAt:EVENT_SUCCESSOR,
+  baselineSourceSubjectRef:EVENT_SUBJECT,
+  successorSourceSubjectRef:EVENT_SUBJECT,
+  resolution:'minute',comparisonRef:ni(9),
+  baselineOutcome:beforeOutcome,successorOutcome:afterOutcome,...extra
+ });
+
+test('discrete token events preserve increasing total tokens and decreasing input per reported accepted result',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{
+  'inference-input':'100','inference-output':'10'})];
+ const later=[eventInput(1,'2026-10-18T20:04:03.875Z',{
+  'inference-input':'120','inference-output':'15'})];
+ const result=eventIntensity(first,later,reportedOutcome(10,'1'),reportedOutcome(11,'2'));
+ assert.equal(result.kind,'source-event-window-conditional-resource-intensity-reading');
+ assert.equal(result.conditionalIntensityCount,2);
+ assert.equal(result.sourceEventCollectionCompletenessVerified,false);
+ assert.equal(result.sourceAndFunctionalEquivalenceIndependentlyVerified,false);
+ assert.equal(result.requirementOrEngineeringAcceptanceClaimAllowed,false);
+ const row=result.readings.find(r=>r.resource==='inference-input');
+ assert.deepEqual(row.totalRecordedEventDifference,amount('20'));
+ assert.deepEqual(row.baselinePerReportedAcceptedUnit,amount('100'));
+ assert.deepEqual(row.successorPerReportedAcceptedUnit,amount('60'));
+ assert.deepEqual(row.differencePerReportedAcceptedUnit,amount('-40'));
+ assert.deepEqual(row.successorOverBaselineIntensity,amount('3','5'));
+ assert.equal(row.intensityDirection,'decrease');
+ assert.match(row.intensityStatus,/not-complete-or-receiver-verified/u);
+ assert.equal(row.eventTemporalBasis,'original-discrete-source-event-time-not-second-interval-coverage');
+ assert.equal(result.baselineSourceEventCount,1);
+ assert.equal(result.successorSourceEventCount,1);
+});
+
+test('lower total token use with less reported accepted work worsens the conditional intensity',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'100'})];
+ const later=[eventInput(1,'2026-10-18T20:04:00.999Z',{'inference-input':'80'})];
+ const row=eventIntensity(first,later,reportedOutcome(10,'2'),reportedOutcome(11,'1')).readings[0];
+ assert.deepEqual(row.totalRecordedEventDifference,amount('-20'));
+ assert.deepEqual(row.baselinePerReportedAcceptedUnit,amount('50'));
+ assert.deepEqual(row.successorPerReportedAcceptedUnit,amount('80'));
+ assert.deepEqual(row.successorOverBaselineIntensity,amount('8','5'));
+ assert.equal(row.intensityDirection,'increase');
+});
+
+test('replayed source events are counted once and input order cannot alter the recorded ratio',()=>{
+ const first=eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'15'});
+ const second=eventInput(1,'2026-10-18T20:03:01.875Z',{'inference-input':'5'});
+ const later=eventInput(2,'2026-10-18T20:04:00.555Z',{'inference-input':'10'});
+ const expected=eventIntensity([first,second],[later],reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ const repeated=eventIntensity([second,first,first],[later,later],
+  reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ assert.deepEqual(repeated.readings,expected.readings);
+ assert.deepEqual(expected.readings[0].baseline.amount,amount('20'));
+ assert.equal(repeated.baselineSourceEventCount,2);
+ assert.equal(repeated.successorSourceEventCount,1);
+ assert.equal(repeated.readings[0].baseline.sourceCount,2);
+});
+
+test('different original source sessions require a reported matching relation, never an automatic join',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'100'})];
+ const other=ni(12);
+ const later=[eventInput(1,'2026-10-18T20:04:00.875Z',
+  {'inference-input':'40'},{resourceSubjectRef:other})];
+ const extra={successorSourceSubjectRef:other};
+ const before=reportedOutcome(10,'1'),after=reportedOutcome(11,'1');
+ const absent=eventIntensity(first,later,before,after,extra);
+ assert.equal(absent.conditionalIntensityCount,0);
+ assert.equal(absent.readings[0].intensityStatus,'source-subject-equivalence-evidence-missing');
+ assert.equal(Object.hasOwn(absent.readings[0],'differencePerReportedAcceptedUnit'),false);
+ const claimed=eventIntensity(first,later,before,after,{
+  ...extra,matchedSourceEvidenceRef:ni(13)});
+ assert.equal(claimed.conditionalIntensityCount,1);
+ assert.equal(claimed.matchedSourceEvidenceStatus,
+  'caller-reported-subject-matching-reference-not-independently-verified');
+ assert.equal(claimed.sourceAndFunctionalEquivalenceIndependentlyVerified,false);
+});
+
+test('cross-actor streams and unattributed consumer events never become corporate efficiency readings',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'90'})];
+ const changed=[eventInput(1,'2026-10-18T20:04:00.127Z',
+  {'inference-input':'90'},{consumerActorRef:'urn:ame:other-actor'})];
+ const difference=eventIntensity(first,changed,reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ assert.equal(difference.conditionalIntensityCount,0);
+ assert.equal(difference.withheldIntensityCount,2);
+ assert.ok(difference.readings.every(x=>x.intensityStatus==='unobserved-event-dimension-on-one-side'));
+ const unknown=[tokenEvent(2,'2026-10-18T20:03:00.127Z',{'inference-input':'10'})];
+ const later=[tokenEvent(3,'2026-10-18T20:04:00.127Z',{'inference-input':'10'})];
+ const unoriented=eventIntensity(unknown,later,reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ assert.equal(unoriented.readings[0].intensityStatus,'consumer-actor-unattributed');
+ assert.equal(unoriented.conditionalIntensityCount,0);
+});
+
+test('missing event category, missing full source population, and zero result do not become zero consumption',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'100','inference-output':'2'})];
+ const later=[eventInput(1,'2026-10-18T20:04:00.127Z',{'inference-input':'80'})];
+ const rowset=eventIntensity(first,later,reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ const missing=rowset.readings.find(x=>x.resource==='inference-output');
+ assert.equal(missing.intensityStatus,'unobserved-event-dimension-on-one-side');
+ assert.equal(missing.successor,null);
+ assert.equal(Object.hasOwn(missing,'differencePerReportedAcceptedUnit'),false);
+ const zero=eventIntensity(first,later,reportedOutcome(10,'0'),reportedOutcome(11,'1'));
+ assert.equal(zero.conditionalIntensityCount,0);
+ assert.equal(zero.readings.find(x=>x.resource==='inference-input').intensityStatus,'zero-reported-accepted-output');
+ const noEvents=eventIntensity([],[],reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ assert.deepEqual(noEvents.readings,[]);
+ assert.equal(noEvents.conditionalIntensityCount,0);
+ assert.equal(noEvents.sourceEventCollectionCompletenessVerified,false);
+});
+
+test('peak gauge and overlapping token categories retain their distinct grades',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{},{
+  measurements:[
+   meter('memory-peak','By','100'),
+   meter('inference-total','token','10'),
+   meter('inference-input','token','7')
+  ]})];
+ const later=[eventInput(1,'2026-10-18T20:04:00.127Z',{},{
+  measurements:[
+   meter('memory-peak','By','90'),
+   meter('inference-total','token','12'),
+   meter('inference-input','token','8')
+  ]})];
+ const r=eventIntensity(first,later,reportedOutcome(10,'1'),reportedOutcome(11,'1'));
+ assert.equal(r.conditionalIntensityCount,2);
+ assert.equal(r.readings.find(x=>x.resource==='memory-peak').intensityStatus,
+  'nonadditive-gauge-not-input-intensity');
+ assert.equal(r.readings.find(x=>x.resource==='inference-total').baseline.amount.numerator,'10');
+ assert.equal(r.readings.find(x=>x.resource==='inference-input').baseline.amount.numerator,'7');
+});
+
+test('event arithmetic refuses out-of-window events, duplicate source IDs and invalid evidence',()=>{
+ const first=eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'20'});
+ const later=eventInput(1,'2026-10-18T20:04:00.127Z',{'inference-input':'20'});
+ const b=reportedOutcome(10,'1'),a=reportedOutcome(11,'1');
+ assert.throws(()=>eventIntensity([first],[{...first,observedAt:later.observedAt}],b,a),
+  /reuse an original source event identity/u);
+ assert.throws(()=>eventIntensity([{...first,observedAt:later.observedAt}],[later],b,a),
+  /outside its declared window/u);
+ assert.throws(()=>eventIntensity([first],[later],b,a,{resolution:'bad'}),
+  /named UTC window/u);
+ assert.throws(()=>eventIntensity([first],[later],b,a,{
+  successorStartAt:EVENT_BASELINE}),/disjoint/u);
+ assert.throws(()=>eventIntensity([first],[later],b,a,{
+  baselineOutcome:{...b,functionalUnitRef:ni(36)}}),/different reported functional units/u);
+ assert.throws(()=>eventIntensity([first],[later],b,a,{matchedSourceEvidenceRef:'none'}),
+  /source NI/u);
+ assert.throws(()=>eventIntensity([first],[later],b,{...a,sourceEvidenceRef:b.sourceEvidenceRef}),
+  /reuse accepted-outcome source evidence/u);
+ assert.throws(()=>eventIntensity([first],[later],b,a,{
+  baselineSourceSubjectRef:ni(20)}),/different original source subject/u);
+});
+
+test('exact event intensity preserves zero baseline as undefined relative ratio',()=>{
+ const first=[eventInput(0,'2026-10-18T20:03:00.127Z',{'inference-input':'0'})];
+ const later=[eventInput(1,'2026-10-18T20:04:00.127Z',{'inference-input':'10'})];
+ const row=eventIntensity(first,later,reportedOutcome(10,'1'),reportedOutcome(11,'2')).readings[0];
+ assert.deepEqual(row.baselinePerReportedAcceptedUnit,amount('0'));
+ assert.deepEqual(row.successorPerReportedAcceptedUnit,amount('5'));
+ assert.equal(row.successorOverBaselineIntensity,null);
 });
