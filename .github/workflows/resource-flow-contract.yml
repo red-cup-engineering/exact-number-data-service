@@ -10,6 +10,7 @@ on:
       - 'src/utc-windows.mjs'
       - 'test/**'
       - 'package.json'
+      - 'scripts/assay-resource-flow-package.mjs'
       - '.github/workflows/resource-flow-contract.yml'
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - 'src/utc-windows.mjs'
       - 'test/**'
       - 'package.json'
+      - 'scripts/assay-resource-flow-package.mjs'
       - '.github/workflows/resource-flow-contract.yml'
   workflow_dispatch:
 
@@ -44,3 +46,5 @@ jobs:
           node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs
       - name: Verify complete dependency-free exact-number package contracts
         run: npm test
+      - name: Fabricate twice and receive original packed resource-flow API in an isolated consumer
+        run: node scripts/assay-resource-flow-package.mjs
