@@ -150,3 +150,99 @@ information, neither of which this resource reader invents.
 Run: node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs.
 Native CI exercises this plus the full exact-number package tests. Source
 passing does not establish installed agent use or a real consumer improvement.
+
+
+## Reported accepted-output intensity for Wednesday efficiency (source contract)
+
+**Source of requirement:** the 561 Group Leader's October 21, 2026 Wednesday
+directive: measure changes in energy and resource flow, derive efficiency
+requirements, change specifications and designs, and refabricate the original
+systems. This is an incremental native exact-number measurement supplier to
+the [original Coesite tune-up/Work #293](https://github.com/coesite-operations/operations-services-section/issues/293)
+and [Red Cup Engineering four-stage Work #137](https://github.com/red-cup-engineering/engineering-services-section/issues/137).
+It is neither a separate ledger, actor, requirement-admission writer nor
+engineering runtime.
+
+### Behavioural specification and protected receiving
+
+- **EFF-01 — Source fidelity.** An intensity comparison SHALL invoke
+  \`compareResourceFlowWindows\` on the original source-addressed, exactly
+  dimensioned one-second meter observations. It SHALL retain original absolute
+  changes alongside normalized intensity, preserving meter, actor, supplier,
+  consumer, UTC window, source count, units and observation coverage.
+- **EFF-02 — Same functional unit.** Two independently *reported* outcome
+  populations SHALL identify the **same** source-referenced functional unit
+  and distinct source-evidence identities, with an exact nonnegative rational
+  reported number of accepted outcomes. The reader SHALL never claim that an
+  NI-shaped source locator authenticates a beneficiary or establishes actual
+  quality, utility, workload equivalence or delivered acceptance.
+- **EFF-03 — Exact calculation.** On fully observed, nonambiguous **additive
+  consumption** dimensions and strictly positive reported outcome quantities,
+  the reader SHALL return exact per-outcome baseline and successor intensities,
+  their signed difference, and successor/baseline ratio only when baseline
+  intensity is nonzero, reusing the shared graded-rational carrier.
+  It SHALL NOT collapse incompatible units into a scalar cost/efficiency rank.
+- **EFF-04 — Defined refusal.** Missing seconds or resource dimensions,
+  multiple unpartitioned source meters, a nonadditive maximum, mismatched
+  functional units, zero reported accepted outcomes, malformed quantities,
+  and reused outcome-source identities SHALL either explicitly refuse
+  comparison or withhold normalized results. They SHALL NOT become zero use,
+  estimated acceptance or invented resource savings.
+- **EFF-05 — Total versus intensity.** Reporting lower energy **per accepted
+  reported outcome** SHALL NOT imply lower absolute joules, carbon, money or
+  environmental cost. The result SHALL preserve the absolute resource delta
+  so increased throughput and demand rebound remain inspectable.
+- **EFF-06 — Authority and receiving.** The outcome quantities and source
+  references are **caller-reported evidence awaiting actual source and
+  beneficiary qualification**. The producer SHALL always withhold claims
+  of admitted Requirements, approved Specification/Architecture/Design,
+  qualified Fabrication, installed host or independent beneficiary effect.
+  Original Group/Engineering/Coesite owners SHALL admit these stages separately.
+
+### Interface/design: the original producer, not another meter
+
+\`compareResourceFlowIntensityWindows\` is exported from the existing
+\`@red-cup-engineering/exact-number-data-service/resource-flow\`.
+It accepts the *same* before/after fields as
+\`compareResourceFlowWindows\`, plus:
+
+\`\`\`js
+baselineOutcome: {
+  sourceEvidenceRef: "ni:///sha-256;<43-character-source-address>",
+  functionalUnitRef: "ni:///sha-256;<43-character-source-defined-functional-unit>",
+  acceptedUnits: { numerator: "10", denominator: "1" }
+},
+successorOutcome: {
+  sourceEvidenceRef: "ni:///sha-256;<different-source-address>",
+  functionalUnitRef: "ni:///sha-256;<same-functional-unit>",
+  acceptedUnits: { numerator: "12", denominator: "1" }
+}
+\`\`\`
+
+The source response retains the **entire existing resource comparison** under
+\`resourceComparison\`, and adds per-resource dimension
+\`baselinePerReportedAcceptedUnit\`, \`successorPerReportedAcceptedUnit\`,
+\`differencePerReportedAcceptedUnit\`, \`successorOverBaselineIntensity\`,
+and \`intensityStatus\` only when admissible. An exact denominator
+is an observed or claimed count, not a fictitious scalar convenience.
+
+The native comparison is \`E_b/N_b\` versus \`E_s/N_s\` for the same
+functional unit, where \`E\` is one specific measured resource grade.
+To interpret it as an **actual efficiency improvement**, independently
+verify \`N\` as accepted comparable-quality useful outcomes, meter
+calibration, environment/load and receiver rights; also check fixed-volume
+total input and displaced upstream/downstream inputs.
+
+### Predeclared native receiving cases
+
+The source tests require (A) total energy *increases* while exact joules per
+reported accepted result *decrease*; (B) total energy decreases but intensity
+worsens; (C) zero accepted outcomes, nonadditive peak and absent dimensions
+withhold ratios; (D) partial minute, reused or mismatched provenance,
+invalid rational and differing functional units refuse; and (E) zero
+baseline consumption gives no invented relative percentage. All are
+source-level cases—not real accepted Work receipts.
+
+Run \`npm test\` on this exact package and read the changed source back.
+Package publication, installation into FeltOS/Cold Red Gate, actual operation
+and independent beneficial outcomes remain further explicit gates.
