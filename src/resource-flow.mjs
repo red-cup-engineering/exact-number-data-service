@@ -282,8 +282,15 @@ export function compareResourceFlowWindows({
   const missing=!b||!a;
   const complete=!missing&&b.observedSeconds===b.windowSeconds&&
     a.observedSeconds===a.windowSeconds;
+  // Two separate source addresses may describe two legitimate sub-meters or
+  // the SAME resource reading twice. Without a provider partition law a
+  // sourceCount larger than observedSeconds is ambiguous, not an improvement.
+  const ambiguous=!missing&&(b.sourceCount!==b.observedSeconds||
+    a.sourceCount!==a.observedSeconds);
   const status=missing?'unobserved-dimension-on-one-side':
-    !complete?'unobserved-seconds-prevent-comparison':'observed-exact-difference';
+    !complete?'unobserved-seconds-prevent-comparison':
+    ambiguous?'multiple-sources-per-second-without-partition-law':
+    'observed-exact-difference';
   const common={
    feedRef:row.feedRef,serviceActorRef:row.serviceActorRef,
    supplierActorRef:row.supplierActorRef,consumerActorRef:row.consumerActorRef,
@@ -291,7 +298,7 @@ export function compareResourceFlowWindows({
    windowSeconds:windowClass.milliseconds/1000,
    baseline:baseMeta,successor:afterMeta,status
   };
-  if(!complete)return Object.freeze(common);
+  if(!complete||ambiguous)return Object.freeze(common);
   const actorOrigins={
    supplierActorRef:b.supplierActorRef,consumerActorRef:b.consumerActorRef
   };
