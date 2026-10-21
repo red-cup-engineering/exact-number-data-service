@@ -56,7 +56,7 @@ try{
  },null,2)+"\n");
  run("npm",["install","--ignore-scripts","--offline","--no-audit","--no-fund",
   archiveOne],consumer);
- const consumerTest=String.raw\`
+ const consumerTest=String.raw`
 import assert from "node:assert/strict";
 import {
   deriveResourceEventReadings,
@@ -105,7 +105,7 @@ process.stdout.write(JSON.stringify({
  sourcePopulationVerified:result.sourceEventCollectionCompletenessVerified,
  originalSourceEvidenceOnly:true
  })+"\n");
-\`;
+`;
  writeFileSync(join(consumer,"acceptance.mjs"),consumerTest);
  const receipt=run("node",["acceptance.mjs"],consumer).trim();
  const parsed=JSON.parse(receipt);
