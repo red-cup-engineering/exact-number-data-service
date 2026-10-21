@@ -315,3 +315,20 @@ test('source identity, incompatible time scope and nonphysical money inputs refu
  assert.deepEqual(compare([],[]).readings,[]);
  assert.equal(compare([],[]).comparedDimensionCount,0);
 });
+
+
+test('independently named same-second meters cannot manufacture source-complete savings',()=>{
+ const baseline=[
+  sample(0,comparisons.baselineStartAt,[meter('energy','J','2')]),
+  sample(2,comparisons.baselineStartAt,[meter('energy','J','3')])
+ ];
+ const successor=[sample(1,comparisons.successorStartAt,[meter('energy','J','2')])];
+ const result=compare(baseline,successor);
+ const [row]=result.readings;
+ assert.equal(row.baseline.sourceCount,2);
+ assert.equal(row.baseline.observedSeconds,1);
+ assert.equal(row.status,'multiple-sources-per-second-without-partition-law');
+ assert.equal(result.comparedDimensionCount,0);
+ assert.equal(result.unknownDimensionCount,1);
+ assert.equal('difference' in row,false);
+});
