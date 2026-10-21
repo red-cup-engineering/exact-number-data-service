@@ -104,3 +104,49 @@ Event streams without a known customer actor retain
 \`attribution:consumer-unattributed\` in the projections, rather than
 fabricating one. These are reusable numerical projections: consumers supply
 genuine identified events from their own typed SEAVT storage.
+
+
+## Compare energy and resource flow without inventing evidence
+
+The same original resource-flow export now includes
+compareResourceFlowWindows({baselineObservations,successorObservations,
+baselineStartAt,successorStartAt,resolution,comparisonRef,matchedWorkEvidenceRef?}).
+
+Supply the original one-second source observations, rather than fabricated
+aggregate numbers. Both pass through the original deriveResourceFlowReadings
+validation. The comparison selects two disjoint, ordered and UTC-aligned
+windows of the same resolution and matches each separate feed, service,
+supplier, consumer, resource, unit and aggregation. An available complete
+pair yields an exact signed successor minus baseline rational difference and,
+where baseline is nonzero, an exact successor/baseline ratio through the
+original graded-rational provider. Peak memory is a maximum difference,
+not additive flow or saved joules. Omitted dimensions, missing whole seconds,
+different actors/feeds, unknown units and reused source observation identities
+cannot give fabricated savings.
+
+A supplied matchedWorkEvidenceRef is a pointer for external validation, NOT
+proof that runs delivered equivalent work, had matched load, shared a calibrated
+electricity meter, or were representative. Only an authorized independent Work
+assayer can qualify equivalence, applicable standards and legitimate receiving
+conditions. The result deliberately carries
+requirementOrEngineeringAcceptanceClaimAllowed=false. A numerical measurement
+cannot unilaterally create a Requirement, authorize Specifying, Architecting,
+Designing or Fabricating, post money, or prove deployment.
+
+The source-owner sequence is:
+source-observed resource changes and coverage -> original attributed Work
+and admitted Requirement -> tested performance/energy specification ->
+architecture constraints and design alternatives -> original fabrication,
+tests and immutable source readback -> actual deployed remeasurement under
+matched conditions -> independent recipient judgment.
+The Group's original Engineering Work #137 owns the four-stage closure;
+Coesite tune-up Work #293 selects an admissible original improvement.
+
+Measured or modeled electricity in joules, provider token quantities, FOCUS
+ConsumedQuantity/PricingQuantity, and SCI carbon intensity are separate
+claims. SCI also requires carbon intensity and hardware embodied-emission
+information, neither of which this resource reader invents.
+
+Run: node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs.
+Native CI exercises this plus the full exact-number package tests. Source
+passing does not establish installed agent use or a real consumer improvement.
