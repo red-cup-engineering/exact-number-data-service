@@ -12,8 +12,8 @@
  * Every output advertises the number of seconds actually represented; absence
  * of a row means unobserved, NEVER zero consumption.
  */
-import {admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
-import {gradedAdd,gradedCompare,gradedValue} from './graded.mjs';
+import {admitResourceMeasurement,admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
+import {gradedAdd,gradedCompare,gradedSubtract,gradedRatio,gradedValue} from './graded.mjs';
 import {rationalParts} from './exact-number.mjs';
 import {UTC_WINDOWS,utcWindowsAt} from './utc-windows.mjs';
 
@@ -211,4 +211,130 @@ export function deriveResourceEventReadings(events){
    b.consumerActorRef??null,b.resource,b.unit])
  ));
  return Object.freeze(output);
+}
+
+
+/**
+ * Compare TWO source-observed resource windows, keeping unknown coverage,
+ * actor/commodity dimensions, and fixed original Work identities separate.
+ *
+ * This is the comparative *measure* for an Engineering decision, NOT a
+ * threshold, energy-to-carbon factor, customer acceptance, causality proof,
+ * requirement creation, ledger posting, or authorization to refabricate.
+ * The operator must independently qualify identical delivered function,
+ * relevant load, service rights, source meter calibration, and the applicable
+ * original Requirement before a delta can motivate a design change.
+ *
+ * Unlike subtracting arbitrary dashboard totals, source-observation input is
+ * passed through the ORIGINAL deriveResourceFlowReadings admission above.
+ * No missing source, second or resource dimension becomes a fabricated zero.
+ */
+export function compareResourceFlowWindows({
+ baselineObservations,successorObservations,
+ baselineStartAt,successorStartAt,resolution,comparisonRef,
+ matchedWorkEvidenceRef
+}={}){
+ if(!Array.isArray(baselineObservations)||!Array.isArray(successorObservations))
+  invalid('comparison requires both source-observation populations');
+ if(typeof comparisonRef!=='string'||!NI.test(comparisonRef))
+  invalid('comparisonRef needs the original source-owned NI identity');
+ if(matchedWorkEvidenceRef!==undefined &&
+    (typeof matchedWorkEvidenceRef!=='string'||!NI.test(matchedWorkEvidenceRef)))
+  invalid('optional matchedWorkEvidenceRef must be a source-owned NI');
+ const windowClass=RESOURCE_FLOW_WINDOWS.find(x=>x.resolution===resolution);
+ if(windowClass===undefined)invalid('comparison needs an original named UTC window resolution');
+ const originalWindow=(value,name)=>{
+  instant(value,name);
+  const window=utcWindowsAt(value).find(x=>x.resolution===resolution);
+  if(window.startAt!==value)
+   invalid(name+' must be aligned to the requested original UTC window');
+  return window;
+ };
+ const earlier=originalWindow(baselineStartAt,'baselineStartAt');
+ const later=originalWindow(successorStartAt,'successorStartAt');
+ if(Date.parse(earlier.endAt)>Date.parse(later.startAt))
+  invalid('before and after windows must be disjoint and chronologically ordered');
+ const baseline=deriveResourceFlowReadings(baselineObservations)
+  .filter(row=>row.resolution===resolution&&row.startAt===earlier.startAt);
+ const successor=deriveResourceFlowReadings(successorObservations)
+  .filter(row=>row.resolution===resolution&&row.startAt===later.startAt);
+ // A reused source observation across supposedly different periods cannot
+ // independently witness a change, even when no selected window uses it.
+ const beforeSources=new Set(baselineObservations.map(x=>x.sourceObservationAddress));
+ if(successorObservations.some(x=>beforeSources.has(x.sourceObservationAddress)))
+  invalid('before and after reuse an original source observation identity');
+ const dimension=row=>JSON.stringify([
+  row.feedRef,row.serviceActorRef,row.supplierActorRef,row.consumerActorRef,
+  row.resource,row.unit,row.aggregation
+ ]);
+ const byBefore=new Map(baseline.map(row=>[dimension(row),row]));
+ const byAfter=new Map(successor.map(row=>[dimension(row),row]));
+ if(byBefore.size!==baseline.length||byAfter.size!==successor.length)
+  invalid('same-side comparison has duplicate dimension coordinates');
+ const keys=[...new Set([...byBefore.keys(),...byAfter.keys()])].sort(order);
+ if(keys.length>512)invalid('more than 512 compared dimensions; select a smaller original Work');
+ const readings=keys.map(key=>{
+  const b=byBefore.get(key),a=byAfter.get(key),row=b??a;
+  const baseMeta=b?{amount:b.amount,observedSeconds:b.observedSeconds,
+   sourceCount:b.sourceCount}:null;
+  const afterMeta=a?{amount:a.amount,observedSeconds:a.observedSeconds,
+   sourceCount:a.sourceCount}:null;
+  const missing=!b||!a;
+  const complete=!missing&&b.observedSeconds===b.windowSeconds&&
+    a.observedSeconds===a.windowSeconds;
+  const status=missing?'unobserved-dimension-on-one-side':
+    !complete?'unobserved-seconds-prevent-comparison':'observed-exact-difference';
+  const common={
+   feedRef:row.feedRef,serviceActorRef:row.serviceActorRef,
+   supplierActorRef:row.supplierActorRef,consumerActorRef:row.consumerActorRef,
+   resource:row.resource,unit:row.unit,aggregation:row.aggregation,
+   windowSeconds:windowClass.milliseconds/1000,
+   baseline:baseMeta,successor:afterMeta,status
+  };
+  if(!complete)return Object.freeze(common);
+  const actorOrigins={
+   supplierActorRef:b.supplierActorRef,consumerActorRef:b.consumerActorRef
+  };
+  const amountOf=input=>admitResourceMeasurement({
+   resource:input.resource,unit:input.unit,amount:input.amount
+  },actorOrigins).gradedAmount;
+  const before=amountOf(b),after=amountOf(a);
+  // Both grades must be equal; the shared rational tower owns all arithmetic.
+  const difference=gradedSubtract(after,before);
+  const [num,den]=rationalParts(gradedValue(difference));
+  const baselineParts=rationalParts(gradedValue(before));
+  const changeRatio=baselineParts[0]===0n?null:gradedRatio(after,before);
+  const ratio=changeRatio===null?null:rationalParts(changeRatio);
+  return Object.freeze({
+   ...common,
+   difference:Object.freeze({numerator:num.toString(),denominator:den.toString()}),
+   successorOverBaseline:ratio===null?null:Object.freeze({
+    numerator:ratio[0].toString(),denominator:ratio[1].toString()
+   }),
+   direction:num<0n?'decrease':num>0n?'increase':'unchanged',
+   interpretation:row.aggregation==='peak'
+    ?'window-maximum-difference-not-additive-consumption'
+    :'summed-observed-quantity-difference-not-yet-normalized-per-delivered-work'
+  });
+ });
+ return Object.freeze({
+  kind:'source-window-resource-change-reading',
+  comparisonRef,baselineStartAt:earlier.startAt,
+  successorStartAt:later.startAt,resolution,
+  baselineWindowEndAt:earlier.endAt,successorWindowEndAt:later.endAt,
+  baselineObservationCount:baselineObservations.length,
+  successorObservationCount:successorObservations.length,
+  matchedWorkEvidenceRef:matchedWorkEvidenceRef??null,
+  matchedWorkEvidenceStatus:matchedWorkEvidenceRef===undefined
+   ?'no-independent-matched-work-evidence-provided'
+   :'caller-supplied-reference-not-independently-verified',
+  comparedDimensionCount:readings.filter(row=>
+   row.status==='observed-exact-difference').length,
+  unknownDimensionCount:readings.filter(row=>
+   row.status!=='observed-exact-difference').length,
+  readings:Object.freeze(readings),
+  requirementOrEngineeringAcceptanceClaimAllowed:false,
+  meterCalibrationAndIndependentRecipientVerified:false,
+  evidenceStatus:'original-source-numerical-projection-not-causation-nor-financial-settlement'
+ });
 }
