@@ -13,7 +13,7 @@
  * of a row means unobserved, NEVER zero consumption.
  */
 import {admitResourceMeasurement,admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
-import {gradedAdd,gradedCompare,gradedSubtract,gradedRatio,gradedValue} from './graded.mjs';
+import {gradedAdd,gradedCompare,gradedFromParts,gradedQuotient,gradedSubtract,gradedRatio,gradedValue} from './graded.mjs';
 import {rationalParts} from './exact-number.mjs';
 import {UTC_WINDOWS,utcWindowsAt} from './utc-windows.mjs';
 
@@ -343,5 +343,138 @@ export function compareResourceFlowWindows({
   requirementOrEngineeringAcceptanceClaimAllowed:false,
   meterCalibrationAndIndependentRecipientVerified:false,
   evidenceStatus:'original-source-numerical-projection-not-causation-nor-financial-settlement'
+ });
+}
+
+
+/**
+ * Compare source-metered INPUT INTENSITY per REPORTED accepted functional unit.
+ *
+ * This is an exact arithmetic extension of the incumbent window comparison,
+ * not a fabricated acceptance witness, independent quality determination,
+ * optimization score, Requirement admission, or authorization to refabricate.
+ *
+ * baselineOutcome/successorOutcome:
+ *  { sourceEvidenceRef: 'ni:///sha-256;...',
+ *    functionalUnitRef: 'ni:///sha-256;...',
+ *    acceptedUnits: { numerator: '2', denominator: '1' } }
+ *
+ * Source IDs and accepted-output quantities are CALLER REPORTED. Their NI syntax
+ * does not prove that either source was admitted or an external beneficiary
+ * accepted that work. A separate competent assayer must qualify those facts and
+ * the equal functional quality/workload before interpreting numerical intensity
+ * differences as an efficiency improvement.
+ *
+ * Keep total input differences alongside per-output differences: demand
+ * rebound can raise total use when input intensity falls. Nonadditive gauges,
+ * unknown meter coverage and zero accepted output NEVER produce a ratio.
+ */
+export function compareResourceFlowIntensityWindows({
+ baselineObservations,successorObservations,
+ baselineStartAt,successorStartAt,resolution,comparisonRef,
+ matchedWorkEvidenceRef,baselineOutcome,successorOutcome
+}={}){
+ const outcome=(value,name)=>{
+  if(value===null||typeof value!=='object'||Array.isArray(value)||
+     Object.keys(value).sort().join(',')!=='acceptedUnits,functionalUnitRef,sourceEvidenceRef')
+   invalid(name+' must carry reported acceptedUnits and two source addresses only');
+  const {sourceEvidenceRef,functionalUnitRef,acceptedUnits}=value;
+  if(typeof sourceEvidenceRef!=='string'||!NI.test(sourceEvidenceRef)||
+     typeof functionalUnitRef!=='string'||!NI.test(functionalUnitRef))
+   invalid(name+' needs bounded source and functional-unit NI references');
+  if(acceptedUnits===null||typeof acceptedUnits!=='object'||
+     Array.isArray(acceptedUnits)||
+     Object.keys(acceptedUnits).sort().join(',')!=='denominator,numerator')
+   invalid(name+' needs one exact reported acceptedUnits rational');
+  const {numerator,denominator}=acceptedUnits;
+  if(typeof numerator!=='string'||!/^(?:0|[1-9][0-9]{0,127})$/u.test(numerator)||
+     typeof denominator!=='string'||!/^[1-9][0-9]{0,127}$/u.test(denominator))
+   invalid(name+' acceptedUnits must be a nonnegative exact rational');
+  const admitted=gradedFromParts(BigInt(numerator),BigInt(denominator),
+   'reported-functional-output:'+functionalUnitRef);
+  const [n,d]=rationalParts(gradedValue(admitted));
+  return Object.freeze({
+   sourceEvidenceRef,functionalUnitRef,
+   acceptedUnits:Object.freeze({numerator:n.toString(),denominator:d.toString()}),
+   sourceQualification:'caller-reported-evidence-locator-not-independently-verified'
+  });
+ };
+ const beforeOutcome=outcome(baselineOutcome,'baselineOutcome');
+ const afterOutcome=outcome(successorOutcome,'successorOutcome');
+ if(beforeOutcome.functionalUnitRef!==afterOutcome.functionalUnitRef)
+  invalid('reported functional units differ; no intensity comparison');
+ if(beforeOutcome.sourceEvidenceRef===afterOutcome.sourceEvidenceRef)
+  invalid('before and after accepted-outcome evidence needs distinct identities');
+ const resourceComparison=compareResourceFlowWindows({
+  baselineObservations,successorObservations,
+  baselineStartAt,successorStartAt,resolution,comparisonRef,
+  matchedWorkEvidenceRef
+ });
+ const unit=beforeOutcome.functionalUnitRef;
+ const beforeCount=gradedFromParts(
+  BigInt(beforeOutcome.acceptedUnits.numerator),
+  BigInt(beforeOutcome.acceptedUnits.denominator),'reported-functional-output:'+unit);
+ const afterCount=gradedFromParts(
+  BigInt(afterOutcome.acceptedUnits.numerator),
+  BigInt(afterOutcome.acceptedUnits.denominator),'reported-functional-output:'+unit);
+ const withoutWork=beforeOutcome.acceptedUnits.numerator==='0'||
+   afterOutcome.acceptedUnits.numerator==='0';
+ const exact=x=>{
+  const [n,d]=rationalParts(gradedValue(x));
+  return Object.freeze({numerator:n.toString(),denominator:d.toString()});
+ };
+ const readings=resourceComparison.readings.map(row=>{
+  if(row.status!=='observed-exact-difference')
+   return Object.freeze({...row,
+    intensityStatus:'unqualified-source-window-or-dimension'});
+  if(row.aggregation!=='sum')
+   return Object.freeze({...row,
+    intensityStatus:'nonadditive-gauge-not-consumable-input'});
+  if(withoutWork)
+   return Object.freeze({...row,
+    intensityStatus:'zero-reported-accepted-output'});
+  const grade='reported-input-intensity:'+JSON.stringify([
+   row.feedRef,row.serviceActorRef,row.supplierActorRef,
+   row.consumerActorRef,row.resource,row.unit,unit
+  ]);
+  const quantity=value=>gradedFromParts(
+   BigInt(value.numerator),BigInt(value.denominator),
+   'observed-resource:'+grade);
+  const previous=gradedQuotient(quantity(row.baseline.amount),beforeCount,grade);
+  const successor=gradedQuotient(quantity(row.successor.amount),afterCount,grade);
+  const difference=gradedSubtract(successor,previous);
+  const [n]=rationalParts(gradedValue(difference));
+  const [beforeN]=rationalParts(gradedValue(previous));
+  const relative=beforeN===0n?null:gradedRatio(successor,previous);
+  const relativeExact=relative===null?null:(()=>{
+   const [a,b]=rationalParts(relative);
+   return Object.freeze({numerator:a.toString(),denominator:b.toString()});
+  })();
+  return Object.freeze({...row,
+   intensityStatus:'exact-per-reported-accepted-unit-not-receiver-verified',
+   functionalUnitRef:unit,
+   baselinePerReportedAcceptedUnit:exact(previous),
+   successorPerReportedAcceptedUnit:exact(successor),
+   differencePerReportedAcceptedUnit:exact(difference),
+   successorOverBaselineIntensity:relativeExact,
+   intensityDirection:n<0n?'decrease':n>0n?'increase':'unchanged',
+   interpretation:'exact-source-consumption-divided-by-unverified-reported-output; total-use-delta-retained'
+  });
+ });
+ return Object.freeze({
+  kind:'source-window-reported-functional-intensity-reading',
+  comparisonRef,resourceComparison,
+  functionalUnitRef:unit,
+  baselineOutcome:beforeOutcome,successorOutcome:afterOutcome,
+  qualifiedIntensityCount:readings.filter(
+   x=>x.intensityStatus==='exact-per-reported-accepted-unit-not-receiver-verified'
+  ).length,
+  unqualifiedIntensityCount:readings.filter(
+   x=>x.intensityStatus!=='exact-per-reported-accepted-unit-not-receiver-verified'
+  ).length,
+  readings:Object.freeze(readings),
+  independentFunctionalEquivalenceAndAcceptanceVerified:false,
+  requirementOrEngineeringAcceptanceClaimAllowed:false,
+  evidenceStatus:'exact-source-and-caller-reported-outcome-normalization-only'
  });
 }
