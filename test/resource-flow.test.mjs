@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {deriveResourceFlowReadings,deriveResourceEventReadings,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
+import {deriveResourceFlowReadings,deriveResourceEventReadings,compareResourceFlowWindows,RESOURCE_FLOW_WINDOWS} from '../src/resource-flow.mjs';
 
 const ni=index=>'ni:///sha-256;'+String.fromCharCode(65+index).repeat(43);
 const amount=(numerator,denominator='1')=>({numerator,denominator});
@@ -181,4 +181,154 @@ test('source event identity and exact timestamp admission refuse ambiguous or co
   a,{...a,measurements:[meter('inference-input','token','9')]}
  ]),/source address reused/u);
  assert.deepEqual(deriveResourceEventReadings([]),[]);
+});
+
+
+const comparisons={
+ comparisonRef:ni(20),resolution:'second',
+ baselineStartAt:'2026-10-18T20:03:00.000Z',
+ successorStartAt:'2026-10-18T20:03:01.000Z'
+};
+const compare=(baseline,successor,other={})=>compareResourceFlowWindows({
+ ...comparisons,baselineObservations:baseline,successorObservations:successor,...other
+});
+
+test('an original pair of complete second windows has exact signed energy and peak differences',()=>{
+ const baseline=sample(0,comparisons.baselineStartAt,[
+  meter('energy','J','2','3'),meter('memory-peak','By','100'),
+  meter('network-egress','By','9')
+ ]);
+ const successor=sample(1,comparisons.successorStartAt,[
+  meter('energy','joule','1','2'),meter('memory-peak','byte','250')
+ ]);
+ const result=compare([baseline],[successor],{matchedWorkEvidenceRef:ni(21)});
+ const energy=result.readings.find(x=>x.resource==='energy');
+ const memory=result.readings.find(x=>x.resource==='memory-peak');
+ const missing=result.readings.find(x=>x.resource==='network-egress');
+ assert.equal(result.kind,'source-window-resource-change-reading');
+ assert.equal(result.comparedDimensionCount,2);
+ assert.equal(result.unknownDimensionCount,1);
+ assert.deepEqual(energy.baseline.amount,amount('2','3'));
+ assert.deepEqual(energy.successor.amount,amount('1','2'));
+ assert.deepEqual(energy.difference,amount('-1','6'));
+ assert.deepEqual(energy.successorOverBaseline,amount('3','4'));
+ assert.equal(energy.direction,'decrease');
+ assert.equal(energy.unit,'J');
+ assert.equal(energy.status,'observed-exact-difference');
+ assert.equal(energy.baseline.observedSeconds,1);
+ assert.deepEqual(memory.difference,amount('150'));
+ assert.equal(memory.interpretation,'window-maximum-difference-not-additive-consumption');
+ assert.equal(missing.status,'unobserved-dimension-on-one-side');
+ assert.equal(missing.successor,null);
+ assert.equal('difference' in missing,false,'missing meter must not become zero');
+ assert.equal(result.matchedWorkEvidenceStatus,'caller-supplied-reference-not-independently-verified');
+ assert.equal(result.requirementOrEngineeringAcceptanceClaimAllowed,false);
+ assert.equal(result.meterCalibrationAndIndependentRecipientVerified,false);
+ assert.deepEqual(compare([baseline],[successor]),{
+  ...result,matchedWorkEvidenceRef:null,
+  matchedWorkEvidenceStatus:'no-independent-matched-work-evidence-provided'
+ });
+});
+
+test('a partial minute cannot claim a full-window resource improvement',()=>{
+ const original=sample(0,'2026-10-18T20:03:00.000Z',[meter('energy','J','9')]);
+ const after=sample(1,'2026-10-18T20:04:00.000Z',[meter('energy','J','1')]);
+ const args={resolution:'minute',baselineStartAt:'2026-10-18T20:03:00.000Z',
+  successorStartAt:'2026-10-18T20:04:00.000Z'};
+ const partial=compare([original],[after],args);
+ assert.equal(partial.readings.length,1);
+ assert.equal(partial.readings[0].status,'unobserved-seconds-prevent-comparison');
+ assert.equal(partial.readings[0].baseline.observedSeconds,1);
+ assert.equal(partial.readings[0].windowSeconds,60);
+ assert.equal('difference' in partial.readings[0],false);
+ assert.equal(partial.comparedDimensionCount,0);
+ assert.equal(partial.unknownDimensionCount,1);
+});
+
+test('full-minute resource flow comparison is stable under sample permutation and canonical aliases',()=>{
+ const first='2026-10-18T20:03:00.000Z';
+ const second='2026-10-18T20:04:00.000Z';
+ const original=[],after=[];
+ for(let i=0;i<60;i++){
+  original.push(sample(0,new Date(Date.parse(first)+1000*i).toISOString(),
+   [meter('energy','joule','3')],{
+    sourceObservationAddress:'ni:///sha-256;'+String(i).padStart(3,'0')+'Z'.repeat(40)
+   }));
+  after.push(sample(1,new Date(Date.parse(second)+1000*i).toISOString(),
+   [meter('energy','J','2')],{
+    sourceObservationAddress:'ni:///sha-256;'+String(60+i).padStart(3,'0')+'Z'.repeat(40)
+   }));
+ }
+ const args={resolution:'minute',baselineStartAt:first,successorStartAt:second};
+ const result=compare(original,after,args);
+ const reversed=compare([...original].reverse(),[...after].reverse(),args);
+ assert.deepEqual(reversed,result);
+ assert.equal(result.comparedDimensionCount,1);
+ const [row]=result.readings;
+ assert.deepEqual(row.baseline.amount,amount('180'));
+ assert.deepEqual(row.successor.amount,amount('120'));
+ assert.deepEqual(row.difference,amount('-60'));
+ assert.deepEqual(row.successorOverBaseline,amount('2','3'));
+ assert.equal(row.baseline.observedSeconds,60);
+ assert.equal(row.successor.observedSeconds,60);
+ assert.equal(row.baseline.sourceCount,60);
+ assert.equal(row.successor.sourceCount,60);
+});
+
+test('zero source usage yields undefined relative change, never an invented percentage',()=>{
+ const a=sample(0,comparisons.baselineStartAt,[meter('energy','J','0')]);
+ const b=sample(1,comparisons.successorStartAt,[meter('energy','J','2')]);
+ const [reading]=compare([a],[b]).readings;
+ assert.deepEqual(reading.difference,amount('2'));
+ assert.equal(reading.successorOverBaseline,null);
+ assert.equal(reading.direction,'increase');
+});
+
+test('different actor or feed observations never become one comparable resource grade',()=>{
+ const a=sample(0,comparisons.baselineStartAt,[meter('energy','J','3')]);
+ const after=sample(1,comparisons.successorStartAt,[meter('energy','J','2')],{
+  consumerActorRef:'urn:ame:other'
+ });
+ const flow=compare([a],[after]);
+ assert.equal(flow.comparedDimensionCount,0);
+ assert.equal(flow.unknownDimensionCount,2);
+ assert.ok(flow.readings.every(x=>x.status==='unobserved-dimension-on-one-side'));
+ assert.ok(flow.readings.every(x=>!('difference' in x)));
+});
+
+test('source identity, incompatible time scope and nonphysical money inputs refuse comparison',()=>{
+ const a=sample(0,comparisons.baselineStartAt,[meter('energy','J','1')]);
+ const b=sample(1,comparisons.successorStartAt,[meter('energy','J','1')]);
+ assert.throws(()=>compare([a],[{...a,startAt:b.startAt,endAt:b.endAt}]),
+  /reuse an original source observation identity/u);
+ assert.throws(()=>compare([a],[b],{resolution:'invalid'}),/named UTC window/u);
+ assert.throws(()=>compare([a],[b],{baselineStartAt:'2026-10-18T20:03:00Z'}),
+  /exact UTC seconds/u);
+ assert.throws(()=>compare([a],[b],{resolution:'minute',
+  baselineStartAt:'2026-10-18T20:03:01.000Z'}),/must be aligned/u);
+ assert.throws(()=>compare([a],[b],{successorStartAt:comparisons.baselineStartAt}),
+  /disjoint/u);
+ assert.throws(()=>compare([a],[b],{comparisonRef:'unsupported'}),/source-owned NI/u);
+ assert.throws(()=>compare([a],[b],{matchedWorkEvidenceRef:'not-a-witness'}),/source-owned NI/u);
+ assert.throws(()=>compare([a],[{...b,measurements:[meter('energy','USD','7')]}]),
+  /contradictory dimensions/u);
+ assert.deepEqual(compare([],[]).readings,[]);
+ assert.equal(compare([],[]).comparedDimensionCount,0);
+});
+
+
+test('independently named same-second meters cannot manufacture source-complete savings',()=>{
+ const baseline=[
+  sample(0,comparisons.baselineStartAt,[meter('energy','J','2')]),
+  sample(2,comparisons.baselineStartAt,[meter('energy','J','3')])
+ ];
+ const successor=[sample(1,comparisons.successorStartAt,[meter('energy','J','2')])];
+ const result=compare(baseline,successor);
+ const [row]=result.readings;
+ assert.equal(row.baseline.sourceCount,2);
+ assert.equal(row.baseline.observedSeconds,1);
+ assert.equal(row.status,'multiple-sources-per-second-without-partition-law');
+ assert.equal(result.comparedDimensionCount,0);
+ assert.equal(result.unknownDimensionCount,1);
+ assert.equal('difference' in row,false);
 });
