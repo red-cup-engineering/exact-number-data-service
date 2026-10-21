@@ -121,7 +121,7 @@ pair yields an exact signed successor minus baseline rational difference and,
 where baseline is nonzero, an exact successor/baseline ratio through the
 original graded-rational provider. Peak memory is a maximum difference,
 not additive flow or saved joules. Omitted dimensions, missing whole seconds,
-different actors/feeds, unknown units and reused source observation identities
+different actors/feeds, unknown units, overlapping independently named same-second meters without a partition law, and reused source observation identities
 cannot give fabricated savings.
 
 A supplied matchedWorkEvidenceRef is a pointer for external validation, NOT
