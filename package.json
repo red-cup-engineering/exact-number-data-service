@@ -1,5 +1,5 @@
 {
-  "description": "Exact integer, rational and decimal-string arithmetic recovered from the machine snapshot.",
+  "description": "Exact integer and rational arithmetic, including source-equation-witnessed affine linear solution families and rank/nullity.",
   "exports": {
     "./exact-number": "./src/exact-number.mjs",
     "./decimal-string": "./src/decimal-string.mjs",
@@ -29,7 +29,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.5",
+  "version": "0.1.6-dev.0",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   },
