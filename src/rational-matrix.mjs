@@ -68,3 +68,102 @@ export function ratRank(matrix) {
 
 /** The nullity (dimension of the kernel) of a matrix with the given column count: columns − rank. */
 export const ratNullity = (matrix, columns) => columns - ratRank(matrix);
+
+
+/**
+ * Solve A x = b exactly over Q, including underdetermined section constraints.
+ *
+ * This extends this original arithmetic owner beyond rank/nullity: returns
+ * one ACTUAL global coordinate vector and a basis of all homogeneous freedom,
+ * or a source-equation linear-combination witness of inconsistency.
+ *
+ * Integer row operations include an identity tracking block: each reduced row
+ * remains the explicitly weighted sum of the caller's original equations,
+ * so an inconsistent row can be checked by a separate recipient. No floating
+ * approximation, arbitrary "near compatible" repair or fabricated source
+ * authentication occurs here. Matrix row meaning stays with its caller.
+ */
+export function ratSolve(matrix, rightHandSide, { columns } = {}) {
+  if (!Array.isArray(matrix) || !Array.isArray(rightHandSide) ||
+      matrix.length !== rightHandSide.length)
+    throw new TypeError("rational matrix: equal-length rows and right-hand side are required");
+  const width = columns ?? (matrix.length ? matrix[0]?.length : 0);
+  if (!Number.isSafeInteger(width) || width < 0 ||
+      matrix.length > 256 || width > 256 ||
+      matrix.some(row => !Array.isArray(row) || row.length !== width))
+    throw new RangeError("rational matrix: bounded rectangular coefficient system required");
+  const equations = matrix.length;
+  const rational = (n, d = 1n) => rationalOfBigInts(n, d);
+  const reduceRow = row => {
+    const g = row.reduce((result, value) => gcdBig(result, value), 0n);
+    if (g > 1n) return row.map(value => value / g);
+    return row;
+  };
+  const work = matrix.map((row, index) => {
+    const entries = [...row, rightHandSide[index]].map(ratPairOfEntry);
+    const scale = entries.reduce((acc, [, d]) => lcmBig(acc, d), 1n);
+    return [
+      ...entries.map(([n, d]) => n * (scale / d)),
+      ...Array.from({length:equations}, (_, j) => index === j ? scale : 0n),
+    ];
+  });
+  const pivotColumns = [];
+  let pivotRow = 0;
+  for (let column = 0; column < width && pivotRow < equations; column++) {
+    let source = pivotRow;
+    while (source < equations && work[source][column] === 0n) source++;
+    if (source === equations) continue;
+    [work[pivotRow],work[source]] = [work[source],work[pivotRow]];
+    const pivot = work[pivotRow];
+    for (let i = 0; i < equations; i++) {
+      if (i === pivotRow || work[i][column] === 0n) continue;
+      const coefficient = work[i][column];
+      // Each operation is an exact linear combination of original equations.
+      work[i] = reduceRow(work[i].map((value,j) =>
+        value * pivot[column] - coefficient * pivot[j]));
+    }
+    work[pivotRow] = reduceRow(work[pivotRow]);
+    pivotColumns.push(column);
+    pivotRow++;
+  }
+  const rank = pivotColumns.length;
+  const pivots = new Set(pivotColumns);
+  const freeColumns = Array.from({length:width},(_,i)=>i).filter(i=>!pivots.has(i));
+  const contradictionRow = work.find(row =>
+    row.slice(0,width).every(value=>value===0n) && row[width]!==0n);
+  if (contradictionRow) {
+    return Object.freeze({
+      kind:"exactNumber.affineLinearSolve.v1",
+      status:"inconsistent",equations,variables:width,rank,
+      pivotColumns:Object.freeze(pivotColumns),freeColumns:Object.freeze(freeColumns),
+      particular:null,kernelBasis:null,
+      obstruction:Object.freeze({
+        reducedRightHandSide:rational(contradictionRow[width]),
+        // Source-equation weights certify 0 = nonzero by exact combination.
+        // These are not semantic witnesses or third-party attestations.
+        sourceEquationWeights:Object.freeze(contradictionRow.slice(width+1).map(n=>rational(n))),
+      }),
+    });
+  }
+  const particular = Array.from({length:width},()=>rational(0n));
+  for (let i = 0; i < rank; i++) {
+    const column=pivotColumns[i];
+    particular[column]=rational(work[i][width],work[i][column]);
+  }
+  const kernelBasis = freeColumns.map(free=>{
+    const vector=Array.from({length:width},(_,column)=>rational(column===free ? 1n : 0n));
+    for (let i = 0; i < rank; i++) {
+      const pivot=pivotColumns[i];
+      vector[pivot]=rational(-work[i][free],work[i][pivot]);
+    }
+    return Object.freeze(vector);
+  });
+  return Object.freeze({
+    kind:"exactNumber.affineLinearSolve.v1",
+    status:"solution-family",equations,variables:width,rank,
+    pivotColumns:Object.freeze(pivotColumns),freeColumns:Object.freeze(freeColumns),
+    particular:Object.freeze(particular),
+    kernelBasis:Object.freeze(kernelBasis),
+    obstruction:null,
+  });
+}
