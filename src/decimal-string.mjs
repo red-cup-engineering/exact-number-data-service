@@ -202,18 +202,21 @@ export function terminatingPlaces(q) {
   return d === 1n ? Math.max(twos, fives) : null;
 }
 
-const ROUNDINGS = new Set(["half-away-from-zero", "toward-zero"]);
+const ROUNDINGS = new Set(["half-away-from-zero", "half-even", "toward-zero"]);
 
 /** A rational scaled to `places` fractional digits as a signed integer count of units (q × 10^places),
- *  rounded half away from zero, or truncated with `{ rounding: "toward-zero" }` so a chain quantity
- *  is never overstated. */
+ *  rounded half away from zero, rounded half to even with `{ rounding: "half-even" }` (banker's
+ *  rounding: an exact tie goes to the even unit, so 0.125 at 2 places is 0.12 and 0.135 is 0.14), or
+ *  truncated with `{ rounding: "toward-zero" }` so a chain quantity is never overstated. */
 export function rationalUnits(q, places, { rounding = "half-away-from-zero" } = {}) {
   if (!Number.isInteger(places) || places < 0) throw new RangeError(`decimal: places must be a non-negative integer, got ${places}`);
   if (!ROUNDINGS.has(rounding)) throw new RangeError(`decimal: unknown rounding ${JSON.stringify(rounding)}`);
   const [num, den] = rationalParts(q), negative = num < 0n;
   const scaled = (negative ? -num : num) * 10n ** BigInt(places);
   let units = scaled / den;
-  if (rounding === "half-away-from-zero" && (scaled % den) * 2n >= den) units += 1n;
+  const twice = (scaled % den) * 2n;
+  if (rounding === "half-away-from-zero" && twice >= den) units += 1n;
+  else if (rounding === "half-even" && (twice > den || (twice === den && units % 2n === 1n))) units += 1n;
   return negative ? -units : units;
 }
 
