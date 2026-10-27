@@ -42,6 +42,19 @@ try{
    "--json","--pack-destination",dest],sourceRoot);
   const result=JSON.parse(raw);
   assert.equal(result.length,1,"one exact source package must be fabricated");
+  // The publisher's original carrier law: declared receiving tests and every
+  // public export must be actual files of the PACKED package. Merely testing
+  // source files in Git does not mean a downstream installed agent can receive
+  // those tests or exports. Verify npm's native packlist, not an approximation.
+  const sourceManifest=JSON.parse(readFileSync(join(sourceRoot,"package.json"),"utf8"));
+  const packedFiles=new Set((result[0].files??[]).map(row=>row.path));
+  const expectedFiles=[
+    ...(sourceManifest.receivingTests??[]),
+    ...Object.values(sourceManifest.exports??{}).map(path=>path.replace(/^\.\//u,""))
+  ];
+  for(const required of expectedFiles)
+    assert.ok(packedFiles.has(required),
+      `declared receiving program or export is missing from npm carrier: ${required}`);
   const filename=result[0].filename;
   assert.match(filename,/^[A-Za-z0-9._-]+\.tgz$/u,"reject unexpected archive path");
   return join(dest,filename);
