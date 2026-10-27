@@ -25,7 +25,7 @@ export const DISCOUNT_RATE_BRACKET_LIMITS = Object.freeze({
   maxPlaces: 0, maxArithmeticDigits: 16000,
 });
 const FIELDS = ["currency", "periodUnit", "cashFlows", "lowerRate", "upperRate", "iterations"];
-const RESULT_FIELDS = ["kind","currency","periodUnit","lowerRate","upperRate",
+const RESULT_FIELDS = ["kind","currency","periodUnit","cashFlows","lowerRate","upperRate",
   "requestedIterations","iterationsPerformed","exactRoot","lower","upper",
   "guaranteedUnique","scope"];
 const TWO = rationalOfBigInts(2n, 1n);
@@ -144,6 +144,7 @@ function conclusion(a,lower,upper,steps,exactRoot){
   return Object.freeze({
     kind:DISCOUNT_RATE_BRACKET_KIND,
     currency:a.source.currency,periodUnit:a.source.periodUnit,
+    cashFlows:a.source.cashFlows,
     lowerRate:a.lowerRate,upperRate:a.upperRate,
     requestedIterations:a.iterations,iterationsPerformed:steps,
     exactRoot,
@@ -201,6 +202,22 @@ export function verifyDiscountRateBracketWork(original,received){
        received.iterationsPerformed<0 ||
        received.iterationsPerformed>a.iterations)
       refuse("RATE_BRACKET_SOURCE","receipt changes original claim, numerical limits or interpretation");
+    // Payment occurrences are source facts, not interchangeable total sums.
+    // Preserve exact lexical amounts, periods and submitted row order.
+    if(!Array.isArray(received.cashFlows) ||
+       Object.getPrototypeOf(received.cashFlows)!==Array.prototype ||
+       received.cashFlows.length!==a.source.cashFlows.length ||
+       Reflect.ownKeys(received.cashFlows).length!==received.cashFlows.length+1)
+      refuse("RATE_BRACKET_SOURCE","receipt does not retain the exact original source occurrences");
+    for(let index=0;index<a.source.cashFlows.length;index++){
+      const descriptor=Object.getOwnPropertyDescriptor(received.cashFlows,String(index));
+      if(!descriptor || !Object.hasOwn(descriptor,"value"))
+        refuse("RATE_BRACKET_SOURCE","receipt has sparse or executable cash-flow rows");
+      exactFields(descriptor.value,["period","amount"],"cash-flow row");
+      if(descriptor.value.period!==a.source.cashFlows[index].period ||
+         descriptor.value.amount!==a.source.cashFlows[index].amount)
+        refuse("RATE_BRACKET_SOURCE","receipt cash-flow occurrence changed from the buyer's original");
+    }
     exactFields(received.lower,["rate","npv"],"lower receipt");
     exactFields(received.upper,["rate","npv"],"upper receipt");
     const l=rationalFromWire(received.lower.rate,128,"lower rate");
