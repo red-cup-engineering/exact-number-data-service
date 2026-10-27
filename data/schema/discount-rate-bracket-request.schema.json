@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/number/discount-rate-bracket-request.schema.json",
+  "title": "Source-qualified exact discount-rate bracket request (bounded profile)",
+  "description": "Structural transport only. Native admission also enforces negative period-zero net investment, nonnegative later flows with at least one positive, rate > -1, strictly increasing bounds and numeric work ceilings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "currency",
+    "periodUnit",
+    "cashFlows",
+    "lowerRate",
+    "upperRate",
+    "iterations"
+  ],
+  "properties": {
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{2,11}$"
+    },
+    "periodUnit": {
+      "enum": [
+        "day",
+        "month",
+        "year"
+      ]
+    },
+    "cashFlows": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 24,
+      "items": {
+        "$ref": "#/$defs/payment"
+      }
+    },
+    "lowerRate": {
+      "$ref": "#/$defs/decimal"
+    },
+    "upperRate": {
+      "$ref": "#/$defs/decimal"
+    },
+    "iterations": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32
+    }
+  },
+  "$defs": {
+    "decimal": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "maxLength": 34
+    },
+    "payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "period",
+        "amount"
+      ],
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "amount": {
+          "$ref": "#/$defs/decimal"
+        }
+      }
+    }
+  }
+}
