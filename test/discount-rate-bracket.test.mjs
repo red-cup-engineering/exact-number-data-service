@@ -98,6 +98,9 @@ test("independent polynomial receiver rejects altered endpoints, algebra, source
     r=>{r.exactRoot=true;},
     r=>{r.scope="all markets";},
     r=>{r.payment={settled:true};},
+    r=>{r.cashFlows[1].amount="201";},
+    r=>{r.cashFlows.reverse();},
+    r=>{r.cashFlows.push({period:3,amount:"1"});},
     r=>{r.lower.npv={kind:"exactNumber.rational",num:"0",den:"1"};},
   ];
   for(const mutate of adversaries){
