@@ -24,7 +24,8 @@
     "README.md",
     "bin",
     "data/schema",
-    "test/cash-flow.test.mjs"
+    "test/cash-flow.test.mjs",
+    "test/discount-rate-bracket.test.mjs"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
   "private": false,
