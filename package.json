@@ -14,7 +14,10 @@
     "./utc-windows": "./src/utc-windows.mjs",
     "./cash-flow": "./src/cash-flow.mjs",
     "./cash-flow-request.schema.json": "./data/schema/cash-flow-request.schema.json",
-    "./cash-flow-result.schema.json": "./data/schema/cash-flow-result.schema.json"
+    "./cash-flow-result.schema.json": "./data/schema/cash-flow-result.schema.json",
+    "./discount-rate-bracket": "./src/discount-rate-bracket.mjs",
+    "./discount-rate-bracket-request.schema.json": "./data/schema/discount-rate-bracket-request.schema.json",
+    "./discount-rate-bracket-result.schema.json": "./data/schema/discount-rate-bracket-result.schema.json"
   },
   "files": [
     "src",
@@ -44,6 +47,7 @@
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
   },
   "receivingTests": [
-    "test/cash-flow.test.mjs"
+    "test/cash-flow.test.mjs",
+    "test/discount-rate-bracket.test.mjs"
   ]
 }
