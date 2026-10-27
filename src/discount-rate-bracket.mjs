@@ -97,6 +97,9 @@ function validate(source) {
 // Reusable bounds and hypothesis check without entering the bisection loop.
 export function admitDiscountRateBracketWork(input){
   const a=validate(input);
+  // Prepayment validation must reject absent brackets before a merchant may
+  // request compensation for the more expensive iterative solver.
+  qualifyEndpointSigns(a);
   return Object.freeze({
     admitted:true,kind:DISCOUNT_RATE_BRACKET_KIND,
     currency:a.source.currency,periodUnit:a.source.periodUnit,
@@ -153,12 +156,16 @@ function conclusion(a,lower,upper,steps,exactRoot){
     guaranteedUnique:true,scope:SCOPE,
   });
 }
-export function computeDiscountRateBracketWork(input){
-  const a=validate(input);
-  let lower={rate:a.lo,npv:sourceNPV(a.source.cashFlows,a.lo)};
-  let upper={rate:a.hi,npv:sourceNPV(a.source.cashFlows,a.hi)};
+function qualifyEndpointSigns(a){
+  const lower={rate:a.lo,npv:sourceNPV(a.source.cashFlows,a.lo)};
+  const upper={rate:a.hi,npv:sourceNPV(a.source.cashFlows,a.hi)};
   if(ratSign(lower.npv)<0 || ratSign(upper.npv)>0)
     refuse("RATE_BRACKET_NO_ROOT","submitted bounds do not bracket the unique zero");
+  return {lower,upper};
+}
+export function computeDiscountRateBracketWork(input){
+  const a=validate(input);
+  let {lower,upper}=qualifyEndpointSigns(a);
   let receipt;
   if(ratSign(lower.npv)===0)receipt=conclusion(a,lower,lower,0,true);
   else if(ratSign(upper.npv)===0)receipt=conclusion(a,upper,upper,0,true);
