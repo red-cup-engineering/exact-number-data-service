@@ -100,3 +100,53 @@ https://support.microsoft.com/en-us/excel/functions/npv-function
 Implementation is authored from this contract, not claimed as generated code or
 a new formal proof. Qualification must retain original independent tests and
 exact supplier/source identities.
+
+
+## Companion: certified discount-rate / IRR interval
+
+The original package's `./discount-rate-bracket` operation receives a separate
+source-owned request `{currency,periodUnit,cashFlows,lowerRate,upperRate,iterations}`
+with no implicit calendar or annualization. The numeric provider reuses
+`admitCashFlowRequest` for exact canonical decimals, bounds and source
+occurrences. Its deliberately smaller workload policy admits at most 24
+occurrences, 64 discrete periods, 32 decimal digits, 1–32 bisections.
+
+**Uniqueness is a mathematical precondition, not guessed by inference.** The
+initial *net period-zero* amount must be negative; all later amounts must be
+nonnegative with at least one positive. Then the finite discounted cash-flow
+function `NPV(r)=A0+sum_{t>0} A_t/(1+r)^t` is continuous and strictly
+decreasing for `r>-1`, tending to positive infinity near -1 and negative
+`A0` at infinity. It has one and only one root. The source-supplied low/high
+rates must additionally bracket that root; otherwise admission/refusal
+returns a typed `RATE_BRACKET_` error. Generic mixed-sign funding or financing
+streams can have multiple IRRs and are **refused** rather than displaying a
+misleading rate.
+
+The producer bisects the interval with **exact rational** midpoints. It returns
+both original cash-flow occurrence records in submitted order, the two
+canonical rational endpoint rates, their exact NPV values, the iteration
+count, and an exact-root flag. An irrational rate stays an exact rational
+*interval*, never a floating approximation described as a proof. Each
+nonexact interval has strictly positive and negative NPV endpoint signs and
+width no greater than `(originalUpper-originalLower)/2^iterations`.
+
+`verifyDiscountRateBracketWork(originalRequest, received)` is a separate
+buyer-side checker. Instead of calling the generator or trusting
+`guaranteedUnique:true`, it independently evaluates the polynomial form
+
+`(1+r)^T * NPV(r) = sum_t A_t (1+r)^(T-t)`,
+
+checks exact rational normalization, both signs, mathematical hypotheses,
+source context, every ordered occurrence and the rigorous width bound.
+Only original model constraints are certified. This pure operation does **not**
+authenticate an external economic observation, guarantee actual investment
+performance, authorize an order, post a ledger entry, determine a quote, or
+establish customer payment. SignCraft—not this number package—owns the
+conversion of qualified source/result observations into actual SignCells
+and evidence/settlement claims.
+
+Original developer checks: `node --test test/discount-rate-bracket.test.mjs`,
+or `npm test`; the public transport schemas are `./discount-rate-bracket-request.schema.json`
+and `./discount-rate-bracket-result.schema.json`. JSON Schema does not
+establish uniqueness, canonical reduced fractions, original source identity,
+or the independent polynomial proof; call the source admission/receiver.
