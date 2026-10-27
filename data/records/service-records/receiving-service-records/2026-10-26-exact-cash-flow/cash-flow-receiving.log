@@ -1,0 +1,19 @@
+✔ inherited array behavior is refused before request or result callbacks execute (3.963038ms)
+✔ tight arithmetic policy accounts for the retained exact rate even at period zero (2.720976ms)
+✔ NPV has exact per-flow discounts, total, rounded value and conserved residual (1.966961ms)
+✔ zero and negative rates are exact per-period conventions (2.506035ms)
+✔ all signs and three quantization modes resolve exact half ties (5.147243ms)
+✔ quantization applies to the exact aggregate, not separately rounded cash flows (0.473376ms)
+✔ large exact amounts, long decimal rates and repeated periods survive JSON transport (2.409141ms)
+✔ admission freezes a separate source model and retains authored decimal lexemes and occurrences (0.329871ms)
+✔ strict schema refuses coercion, ambiguous conventions and unknown properties before computation (1.654396ms)
+✔ host limits are explicit and finite and reject oversized work at admission (1.366206ms)
+✔ independent verification rejects every changed equation, metadata, ordering and claimed authority (3.509442ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.264619
