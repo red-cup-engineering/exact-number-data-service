@@ -5,6 +5,8 @@ on:
     paths:
       - 'src/cash-flow.mjs'
       - 'src/cash-flow.md'
+      - 'src/discount-rate-bracket.mjs'
+      - 'data/schema/discount-rate-bracket-*.schema.json'
       - 'data/schema/cash-flow-*.schema.json'
       - 'src/resource-flow.mjs'
       - 'src/resource-measurement.mjs'
@@ -21,6 +23,8 @@ on:
     paths:
       - 'src/cash-flow.mjs'
       - 'src/cash-flow.md'
+      - 'src/discount-rate-bracket.mjs'
+      - 'data/schema/discount-rate-bracket-*.schema.json'
       - 'data/schema/cash-flow-*.schema.json'
       - 'src/resource-flow.mjs'
       - 'src/resource-measurement.mjs'
@@ -51,8 +55,9 @@ jobs:
       - name: Verify source syntax and exact resource measurement/flow tests
         run: |
           node --check src/resource-flow.mjs
+          node --check src/discount-rate-bracket.mjs
           node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs
       - name: Verify complete dependency-free exact-number package contracts
         run: npm test
-      - name: Fabricate twice and receive original packed resource-flow API in an isolated consumer
+      - name: Fabricate twice and receive exact resource and finance APIs in an isolated consumer
         run: node scripts/assay-resource-flow-package.mjs

@@ -374,3 +374,37 @@ inferred from the reproducibility of a tarball.
 ## Exact cash-flow valuation
 
 `./cash-flow` values ordered decimal cash-flow occurrences at a declared constant per-period rate. It retains exact rational discounts, values and total, rounds only the total under the requested rule, and returns the exact rounding residual. Its separate receiver binds every result to the original request and host bounds. See [the contract](src/cash-flow.md). Draft2020-12 request/result schemas are exported for the default bounded service profile.
+
+
+## Exact financial yield brackets with independent receiving
+
+The original number supplier now exports
+`@red-cup-engineering/exact-number-data-service/discount-rate-bracket` for
+**guaranteed unique**, exactly checkable internal-rate-of-return intervals.
+The request retains the original currency, period unit, **ordered source cash
+flow occurrences**, and the original lower/upper per-period decimal rates.
+`admitDiscountRateBracketWork` uses this package's original bounded
+`admitCashFlowRequest` and verifies the source bounds have opposite NPV
+signs **before a merchant payment challenge**. No agent-written boolean or
+unverified rate constitutes admission.
+
+This operation deliberately refuses general mixed-sign cash flows, which can
+have multiple IRRs. For a strictly negative net period-zero investment and
+nonnegative later receipts, at least one positive, NPV is strictly decreasing
+for rates above -1; exactly one root exists. The producer uses exact rational
+bisection for 1–32 bounded steps. An irrational root stays an exact rational
+interval with verified opposing signs and width at most originalWidth/2^steps.
+
+`verifyDiscountRateBracketWork(originalRequest,received)` independently
+evaluates the **polynomial** NPV identity, not the producer's discounted-sum
+implementation or claimed flag. It refuses changed source occurrence order,
+amount lexemes, context, bounds, forged rational evidence, noncanonical
+fractions and false interval widths. The result carries no actual payment,
+yield observation, investment advice, authorization or financial ledger entry.
+
+See [mathematical source and exact proof constraints](src/cash-flow.md),
+`test/discount-rate-bracket.test.mjs` and the exported Draft 2020-12
+request/receipt JSON Schemas. Source/isolated test success does not establish
+installed downstream SignCraft, merchant, buyer acceptance, original registry
+publication or profit. Retain original existing `./cash-flow` NPV and its
+independent receipt verifier unchanged.
