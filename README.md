@@ -370,3 +370,7 @@ publishing through the original registry, selecting that release in FeltOS,
 installing on a host and independently receiving real Work are **separate,
 still-unfulfilled gates**. No measured production energy reduction is
 inferred from the reproducibility of a tarball.
+
+## Exact cash-flow valuation
+
+`./cash-flow` values ordered decimal cash-flow occurrences at a declared constant per-period rate. It retains exact rational discounts, values and total, rounds only the total under the requested rule, and returns the exact rounding residual. Its separate receiver binds every result to the original request and host bounds. See [the contract](src/cash-flow.md). Draft2020-12 request/result schemas are exported for the default bounded service profile.

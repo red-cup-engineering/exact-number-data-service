@@ -1,0 +1,42 @@
+{
+  "kind": "exact-number.cash-flow-receiving/v1",
+  "sourceBase": "b9278947f130aa763db52387e6524ab2f902cb4b",
+  "version": "0.1.8",
+  "requirements": "src/cash-flow.md",
+  "toolchain": {
+    "node": "24.22.1"
+  },
+  "independentAssay": {
+    "command": "node test/cash-flow.test.mjs",
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0,
+    "oracle": "Separate BigInt rational-pair and repeated-discount oracle, authored before implementation review; twenty-one mutation cases; inherited-array callback refusal; zero-period rate retained-size counterexamples"
+  },
+  "preservedControls": {
+    "filesExecuted": 9,
+    "exitedZero": 8,
+    "countedTests": 70,
+    "countedFailures": 0,
+    "uncountedAssertions": "commodity-carrier.test.mjs exited0 with no node:test summary",
+    "uncompleted": "framework-rigidity.test.mjs timed out at20seconds in its original CLI spawn path; no full-suite success claimed"
+  },
+  "previousRunner": "node --test test/*.test.mjs did not complete; interrupted after original framework-rigidity spawn blocked. Direct node programs provided meaningful case counts.",
+  "files": {
+    "src/cash-flow.mjs": "7f5aeb6353ef819576361248bc5e4e7b92e97f3162c98c9845448f62f1de2f00",
+    "src/cash-flow.md": "573a873eed8dcdc2a8e8b8dfb26efe9e066f43197c879a8ec326664246681394",
+    "test/cash-flow.test.mjs": "d121ed680d0a6f19136affc22c893999f2d5b680139e7f1ce7edfd7c1e9b48e0",
+    "data/schema/cash-flow-request.schema.json": "308ed7c688a8091cf2a08dca208698f1835a288568f9f674723b72a00a9b6fe9",
+    "data/schema/cash-flow-result.schema.json": "f57316c8664f8c7c6a4afb205b0016180578186b240d6b04686f57f12f9f06de",
+    "package.json": "53f1d97a66fe2d84a94dc8290f55eb07342e0d503420cfa90f65a3dcbb71b725",
+    "package-lock.json": "1dcd2bea8cf6ad28f47ee6e3a73f5aab94e10321e3e7870a04571a450a46c3b4"
+  },
+  "effects": "Pure arithmetic only; no network, accounts, payments or trades",
+  "unproved": [
+    "Registry publication",
+    "Native SignCraft consuming receipt",
+    "Market deployment",
+    "Outside buyer demand or paid delivery"
+  ]
+}

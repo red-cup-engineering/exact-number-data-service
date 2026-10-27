@@ -11,12 +11,17 @@
     "./resource-measurement": "./src/resource-measurement.mjs",
     "./framework-rigidity": "./src/framework-rigidity.mjs",
     "./resource-flow": "./src/resource-flow.mjs",
-    "./utc-windows": "./src/utc-windows.mjs"
+    "./utc-windows": "./src/utc-windows.mjs",
+    "./cash-flow": "./src/cash-flow.mjs",
+    "./cash-flow-request.schema.json": "./data/schema/cash-flow-request.schema.json",
+    "./cash-flow-result.schema.json": "./data/schema/cash-flow-result.schema.json"
   },
   "files": [
     "src",
     "README.md",
-    "bin"
+    "bin",
+    "data/schema",
+    "test/cash-flow.test.mjs"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
   "private": false,
@@ -29,7 +34,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   },
@@ -37,5 +42,8 @@
   "funding": {
     "type": "individual",
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
-  }
+  },
+  "receivingTests": [
+    "test/cash-flow.test.mjs"
+  ]
 }
