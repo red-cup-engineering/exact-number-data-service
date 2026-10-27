@@ -77,7 +77,9 @@ test("valid host admission is structural and bounded before iterated exact compu
     {...body(), verified:true}, {...body(), currency:"US"},
     {...body(), cashFlows:[{period:0,amount:"-100"},, {period:1,amount:"110"}]},
   ]) assert.throws(()=>admitDiscountRateBracketWork(invalid));
-  refuses(()=>computeDiscountRateBracketWork(body({lowerRate:"0.2",upperRate:"0.3"})),"RATE_BRACKET_NO_ROOT");
+  const unbracketed=body({lowerRate:"0.2",upperRate:"0.3"});
+  refuses(()=>admitDiscountRateBracketWork(unbracketed),"RATE_BRACKET_NO_ROOT");
+  refuses(()=>computeDiscountRateBracketWork(unbracketed),"RATE_BRACKET_NO_ROOT");
 });
 
 test("independent polynomial receiver rejects altered endpoints, algebra, source, width and false authority",()=>{
