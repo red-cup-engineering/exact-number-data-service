@@ -63,6 +63,11 @@ import {
   compareResourceEventIntensityWindows,
   compareResourceFlowIntensityWindows
 } from "@red-cup-engineering/exact-number-data-service/resource-flow";
+import {
+  admitDiscountRateBracketWork,
+  computeDiscountRateBracketWork,
+  verifyDiscountRateBracketWork
+} from "@red-cup-engineering/exact-number-data-service/discount-rate-bracket";
 const ni=x=>"ni:///sha-256;"+x.repeat(43);
 const amount=x=>({numerator:String(x),denominator:"1"});
 const event=(id,time,count)=>({
@@ -100,22 +105,43 @@ assert.throws(()=>compareResourceEventIntensityWindows({
  ...args,successorEvents:[{...before,observedAt:after.observedAt}]
 }),/reuse an original source event identity/u);
 assert.equal(typeof compareResourceFlowIntensityWindows,"function");
+// Financial computation must work FROM THE INSTALLED PACKED SOURCE, not a
+// local deep import: old workflows used to prove only resource exports.
+const financeSource={currency:"USD",periodUnit:"year",
+ cashFlows:[{period:0,amount:"-100"},{period:1,amount:"55"},{period:1,amount:"55"}],
+ lowerRate:"0",upperRate:"0.2",iterations:16};
+assert.equal(admitDiscountRateBracketWork(financeSource).admitted,true);
+const financeResult=JSON.parse(JSON.stringify(computeDiscountRateBracketWork(financeSource)));
+assert.deepEqual(financeResult.lower.rate,
+ {kind:"exactNumber.rational",num:"1",den:"10"});
+assert.equal(financeResult.exactRoot,true);
+assert.equal(verifyDiscountRateBracketWork(financeSource,financeResult).ok,true);
+const changedPayment=JSON.parse(JSON.stringify(financeResult));
+changedPayment.cashFlows[2].amount="56";
+assert.equal(verifyDiscountRateBracketWork(financeSource,changedPayment).ok,false);
+assert.equal(verifyDiscountRateBracketWork({...financeSource,
+ cashFlows:[{period:0,amount:"-100"},{period:1,amount:"110"}]},financeResult).ok,false);
 process.stdout.write(JSON.stringify({
  consumer:"isolated-packed-artifact",eventIntensity:result.readings[0].intensityDirection,
  sourcePopulationVerified:result.sourceEventCollectionCompletenessVerified,
- originalSourceEvidenceOnly:true
+ originalSourceEvidenceOnly:true,
+  packedSourceFinancialRateVerified:true,
+  packedSourceFinancialForgeryRefused:true
  })+"\n");
 `;
  writeFileSync(join(consumer,"acceptance.mjs"),consumerTest);
  const receipt=run("node",["acceptance.mjs"],consumer).trim();
  const parsed=JSON.parse(receipt);
  assert.equal(parsed.consumer,"isolated-packed-artifact");
+ assert.equal(parsed.packedSourceFinancialRateVerified,true);
+ assert.equal(parsed.packedSourceFinancialForgeryRefused,true);
  process.stdout.write(JSON.stringify({
   kind:"source-pinned-exact-resource-packaging-receipt",
   sourcePackage:manifest.name+"@"+manifest.version,
   sha256:hashOne,repeatSha256:hashTwo,
   deterministic:true,isolatedPackedConsumerPassed:true,
   imported:"./resource-flow",
+  additionallyReceived:"./discount-rate-bracket",
   downstreamReleaseInstalled:false,
   nativeProviderOutcomeReceived:false,
   originalConsumer:parsed
