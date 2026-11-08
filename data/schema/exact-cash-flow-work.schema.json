@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/signcraft/exact-cash-flow-work.schema.json",
+  "title": "Default-profile exact cellular cash-flow work",
+  "description": "The default public service profile for source-bearing discrete-period cash-flow arithmetic. Larger programmatic host-policy overrides are outside this schema. Numerical and cellular replay are required in addition to structural admission; this envelope authenticates no issuer, customer or payment.",
+  "type": "object",
+  "required": ["kind", "result", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "signcraft.exact-cash-flow-work/v1" },
+    "result": { "$ref": "https://schemas.561.group/number/cash-flow-result.schema.json" },
+    "evidence": { "$ref": "#/$defs/evidence" }
+  },
+  "$defs": {
+    "request": { "$ref": "https://schemas.561.group/number/cash-flow-request.schema.json" },
+    "address": { "type": "string", "pattern": "^ni:///sha-256;[A-Za-z0-9_-]{43}$" },
+    "limits": {
+      "type": "object",
+      "required": ["maxCashFlows", "maxPeriod", "maxDigits", "maxPlaces", "maxArithmeticDigits"],
+      "additionalProperties": false,
+      "properties": {
+        "maxCashFlows": { "type": "integer", "minimum": 1 },
+        "maxPeriod": { "type": "integer", "minimum": 0 },
+        "maxDigits": { "type": "integer", "minimum": 1 },
+        "maxPlaces": { "type": "integer", "minimum": 0, "maximum": 18 },
+        "maxArithmeticDigits": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "triple": {
+      "type": "object",
+      "required": ["subject", "predicate", "object"],
+      "additionalProperties": false,
+      "properties": { "subject": {}, "predicate": {}, "object": {} }
+    },
+    "telling": {
+      "type": "object",
+      "required": ["subject", "predicate", "object", "side", "witness"],
+      "additionalProperties": false,
+      "properties": {
+        "subject": {}, "predicate": {}, "object": {},
+        "side": { "const": "for" }, "witness": { "type": "object" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["kind", "requestId", "resultId", "modelId", "numericalId", "limits", "projectedEvidenceRows", "modelRows", "numericalRows", "rows", "site", "rules", "settlementId", "settledAt", "claims", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "signcraft.exact-cash-flow-evidence/v1" },
+        "requestId": { "$ref": "#/$defs/address" },
+        "resultId": { "$ref": "#/$defs/address" },
+        "modelId": { "$ref": "#/$defs/address" },
+        "numericalId": { "$ref": "#/$defs/address" },
+        "limits": { "$ref": "#/$defs/limits" },
+        "projectedEvidenceRows": { "type": "integer", "minimum": 28, "maximum": 4096 },
+        "modelRows": { "type": "array", "maxItems": 4096, "items": { "$ref": "#/$defs/telling" } },
+        "numericalRows": { "type": "array", "maxItems": 4096, "items": { "$ref": "#/$defs/telling" } },
+        "rows": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/$defs/telling" } },
+        "site": {
+          "type": "object",
+          "required": ["kind", "cells", "specializations"],
+          "additionalProperties": false,
+          "description": "Original SignGraph presentSite generators, checked by native reconstruction.",
+          "properties": {
+            "kind": { "const": "signgraph.site" },
+            "cells": { "type": "array", "minItems": 10, "maxItems": 10, "items": { "$ref": "#/$defs/triple" } },
+            "specializations": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "type": "object" } }
+          }
+        },
+        "rules": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "object" }, "description": "Original SignChain rules, checked against the reconstructed source license before execution." },
+        "settlementId": { "$ref": "#/$defs/address" },
+        "settledAt": { "type": "integer", "minimum": 0 },
+        "claims": {
+          "type": "object",
+          "required": ["conditional", "sourceAuthenticity", "customerAcceptance", "payment"],
+          "additionalProperties": false,
+          "properties": {
+            "conditional": { "$ref": "#/$defs/triple" },
+            "sourceAuthenticity": { "$ref": "#/$defs/triple" },
+            "customerAcceptance": { "$ref": "#/$defs/triple" },
+            "payment": { "$ref": "#/$defs/triple" }
+          }
+        },
+        "scope": { "const": "independently checked exact discounted cash-flow arithmetic and rounding for the submitted discrete-period model" }
+      }
+    }
+  }
+}

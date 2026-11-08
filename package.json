@@ -10,6 +10,8 @@
     "./cash-flow": "./src/cash-flow.mjs",
     "./cash-flow-request.schema.json": "./data/schema/cash-flow-request.schema.json",
     "./cash-flow-result.schema.json": "./data/schema/cash-flow-result.schema.json",
+    "./exact-cash-flow-work": "./src/exact-cash-flow-work.mjs",
+    "./exact-cash-flow-work.schema.json": "./data/schema/exact-cash-flow-work.schema.json",
     "./discount-rate-bracket": "./src/discount-rate-bracket.mjs",
     "./discount-rate-bracket-request.schema.json": "./data/schema/discount-rate-bracket-request.schema.json",
     "./discount-rate-bracket-result.schema.json": "./data/schema/discount-rate-bracket-result.schema.json"
@@ -33,7 +35,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   },
@@ -47,6 +49,10 @@
     "test/discount-rate-bracket.test.mjs"
   ],
   "dependencies": {
-    "@red-cup-engineering/metrologic": "0.20.0"
+    "@red-cup-engineering/metrologic": "0.20.0",
+    "@red-cup-engineering/signcell": "0.14.1-dev.1",
+    "@red-cup-engineering/signchain": "0.4.6-dev.1",
+    "@red-cup-engineering/signcraft": "0.8.2-dev.0",
+    "@red-cup-engineering/signgraph": "0.8.0-dev.0"
   }
 }
