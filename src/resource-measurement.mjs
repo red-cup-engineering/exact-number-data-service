@@ -12,7 +12,7 @@
  * arithmetic is owned by exact-number-data-service/graded, not copied here.
  */
 import {gradedFromParts,gradedSign,gradedValue} from './graded.mjs';
-import {rationalParts} from './exact-number.mjs';
+import {rationalParts} from '@red-cup-engineering/metrologic/number/exact-number';
 
 const NI=/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/u;
 const UNIT=/^(?:[A-Za-z][A-Za-z0-9._-]{0,48}|\{[A-Za-z][A-Za-z0-9._-]{0,46}\})$/u;

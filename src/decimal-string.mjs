@@ -1,6 +1,6 @@
 /** Exact decimal-string arithmetic: BigInt-scaled, never a float, for balances and prices; and the
  *  crossing between decimal strings and exact rationals (a decimal is a rational over a power of ten). */
-import { rationalOfBigInts, rationalParts } from "./exact-number.mjs";
+import { rationalOfBigInts, rationalParts } from "@red-cup-engineering/metrologic/number/exact-number";
 
 /**
  * @typedef {{ negative: boolean, whole: string, frac: string }} ParsedDecimal

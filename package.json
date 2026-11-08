@@ -1,13 +1,8 @@
 {
   "description": "Exact integer, rational and decimal-string arithmetic, affine solution families, rank and nullity.",
   "exports": {
-    "./exact-number": "./src/exact-number.mjs",
     "./decimal-string": "./src/decimal-string.mjs",
     "./graded": "./src/graded.mjs",
-    "./quadratic": "./src/quadratic.mjs",
-    "./rational-matrix": "./src/rational-matrix.mjs",
-    "./deterministic-math": "./src/deterministic-math.mjs",
-    "./exact-number-host": "./src/exact-number-host.mjs",
     "./resource-measurement": "./src/resource-measurement.mjs",
     "./framework-rigidity": "./src/framework-rigidity.mjs",
     "./resource-flow": "./src/resource-flow.mjs",
@@ -50,5 +45,8 @@
   "receivingTests": [
     "test/cash-flow.test.mjs",
     "test/discount-rate-bracket.test.mjs"
-  ]
+  ],
+  "dependencies": {
+    "@red-cup-engineering/metrologic": "0.20.0"
+  }
 }

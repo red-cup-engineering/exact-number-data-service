@@ -11,7 +11,7 @@
  * This measures a SPECIFIED coordinate realization. It is not the generic
  * planar (2,3)-sparsity matroid and is not a combinatorial 3D rigidity oracle.
  */
-import { ratPairOfEntry, ratRank } from "./rational-matrix.mjs";
+import { ratPairOfEntry, ratRank } from "@red-cup-engineering/metrologic/number/rational-matrix";
 
 const gcd = (left, right) => {
   let a = left < 0n ? -left : left;

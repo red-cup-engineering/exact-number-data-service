@@ -15,7 +15,7 @@
 import {
   rationalOfBigInts, rationalParts, ratZero, ratOne, ratAdd, ratSubtract,
   ratMultiply, ratCompare, ratSign, ratEqual, divide,
-} from "./exact-number.mjs";
+} from "@red-cup-engineering/metrologic/number/exact-number";
 import { rationalOfDecimal } from "./decimal-string.mjs";
 import { admitCashFlowRequest } from "./cash-flow.mjs";
 

@@ -14,7 +14,7 @@
  */
 import {admitResourceMeasurement,admitResourceMeasurements,admitResourceQuantities} from './resource-measurement.mjs';
 import {gradedAdd,gradedCompare,gradedFromParts,gradedQuotient,gradedSubtract,gradedRatio,gradedValue} from './graded.mjs';
-import {rationalParts} from './exact-number.mjs';
+import {rationalParts} from '@red-cup-engineering/metrologic/number/exact-number';
 import {UTC_WINDOWS,utcWindowsAt} from './utc-windows.mjs';
 
 export const RESOURCE_FLOW_WINDOWS=UTC_WINDOWS;

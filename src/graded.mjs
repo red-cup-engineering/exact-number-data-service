@@ -13,7 +13,7 @@
  * readings are the exact "num/den grade" audit string and decimal strings.
  */
 import { decimalOfRational, terminatingPlaces } from "./decimal-string.mjs";
-import { ratAdd, ratCompare, ratEqual, ratIsZero, ratMultiply, ratNegate, ratSign, ratSubtract, ratZero, divide, rationalOfBigInts, rationalParts } from "./exact-number.mjs";
+import { ratAdd, ratCompare, ratEqual, ratIsZero, ratMultiply, ratNegate, ratSign, ratSubtract, ratZero, divide, rationalOfBigInts, rationalParts } from "@red-cup-engineering/metrologic/number/exact-number";
 
 const GRADED = "exactNumber.gradedRational";
 const requireGrade = (grade) => {

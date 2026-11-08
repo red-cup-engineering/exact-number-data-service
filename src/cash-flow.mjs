@@ -2,7 +2,7 @@
 import {
   rationalOfBigInts, rationalParts, ratAdd, ratSubtract, ratMultiply,
   ratCompare, ratEqual, ratOne, ratZero,
-} from './exact-number.mjs';
+} from '@red-cup-engineering/metrologic/number/exact-number';
 import { rationalOfDecimal, decimalOfRational } from './decimal-string.mjs';
 
 export const CASH_FLOW_DEFAULT_LIMITS = Object.freeze({

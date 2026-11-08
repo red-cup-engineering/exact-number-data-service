@@ -3,7 +3,7 @@ import test from "node:test";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { frameworkRigidityReadout, frameworkRigidityRows } from "../src/framework-rigidity.mjs";
-import { ratRank } from "../src/rational-matrix.mjs";
+import { ratRank } from "@red-cup-engineering/metrologic/number/rational-matrix";
 
 // Exact integer placements and seven-contact graphs from Lenticule's
 // 2026-10-01 Associative Exchange and Ring–Chain Ledger §1.
