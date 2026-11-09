@@ -14,8 +14,10 @@ on:
       - 'src/exact-number.mjs'
       - 'src/rational-matrix.mjs'
       - 'src/utc-windows.mjs'
+      - 'src/wire-ratio.mjs'
       - 'test/**'
       - 'package.json'
+      - 'package-lock.json'
       - 'scripts/assay-resource-flow-package.mjs'
       - '.github/workflows/resource-flow-contract.yml'
   push:
@@ -32,8 +34,10 @@ on:
       - 'src/exact-number.mjs'
       - 'src/rational-matrix.mjs'
       - 'src/utc-windows.mjs'
+      - 'src/wire-ratio.mjs'
       - 'test/**'
       - 'package.json'
+      - 'package-lock.json'
       - 'scripts/assay-resource-flow-package.mjs'
       - '.github/workflows/resource-flow-contract.yml'
   workflow_dispatch:
@@ -52,12 +56,14 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: '24'
+      - name: Install the locked number and Sign dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify source syntax and exact resource measurement/flow tests
         run: |
           node --check src/resource-flow.mjs
           node --check src/discount-rate-bracket.mjs
           node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs
-      - name: Verify complete dependency-free exact-number package contracts
+      - name: Verify exact-number package contracts
         run: npm test
       - name: Fabricate twice and receive exact resource and finance APIs in an isolated consumer
         run: node scripts/assay-resource-flow-package.mjs

@@ -2,6 +2,8 @@
   "description": "Exact integer, rational and decimal-string arithmetic, affine solution families, rank and nullity.",
   "exports": {
     "./decimal-string": "./src/decimal-string.mjs",
+    "./wire-ratio": "./src/wire-ratio.mjs",
+    "./ratio-text": "./src/ratio-text.mjs",
     "./graded": "./src/graded.mjs",
     "./resource-measurement": "./src/resource-measurement.mjs",
     "./framework-rigidity": "./src/framework-rigidity.mjs",
@@ -35,7 +37,7 @@
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   },

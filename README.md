@@ -13,7 +13,26 @@ This is source recovery, not independent publication or completed consumer migra
 
 ## Receive this package
 
-Pack this supplier from its own directory with `npm pack --ignore-scripts`, then install the resulting archive in the consumer with `npm install --ignore-scripts /path/to/archive.tgz`. Import `@red-cup-engineering/exact-number-data-service/decimal-string` or `/exact-number` through the declared exports. Installing the parent repository does not install this nested package.
+Pack this supplier from its own directory with `npm pack --ignore-scripts`, then install the resulting archive in the consumer with `npm install --ignore-scripts /path/to/archive.tgz`. Import `@red-cup-engineering/exact-number-data-service/decimal-string` for decimal text and `@red-cup-engineering/exact-number-data-service/wire-ratio` for reduced pairs of integer strings. Metrologic supplies the arithmetic at `@red-cup-engineering/metrologic/number/exact-number`.
+
+```js
+import {
+  hostRatioOfRational, rationalOfHostRatio,
+} from "@red-cup-engineering/exact-number-data-service/wire-ratio";
+
+const half = rationalOfHostRatio({ numerator: "1", denominator: "2" });
+const wire = hostRatioOfRational(half);
+```
+
+The wire decoder admits reduced integer strings with a positive denominator.
+The encoder preserves every digit, including integers beyond JavaScript's
+safe integer range.
+
+Use `/ratio-text` for reduced slash notation. In `/decimal-string`,
+`readDecimal` retains the source's declared scale alongside the exact value.
+`decimalOfRational` writes at an explicit precision and rounding rule.
+`exactDecimalOfRational` writes the shortest exact finite decimal and
+refuses a repeating expansion.
 
 The package archive was installed into an isolated consumer with no snapshot or custom resolver. Exact arithmetic retained `1e-25` and integer coefficients above binary precision. This establishes local package reception; it does not establish registry publication, an enduring shared distribution endpoint or production migration.
 

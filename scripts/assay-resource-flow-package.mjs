@@ -17,7 +17,6 @@ const sourceRoot=dirname(dirname(fileURLToPath(import.meta.url)));
 const scratch=mkdtempSync(join(tmpdir(),"exact-number-pack-receive-"));
 const environment={
  ...process.env,
- npm_config_offline:"true",
  npm_config_ignore_scripts:"true",
  npm_config_audit:"false",
  npm_config_fund:"false"
@@ -67,10 +66,14 @@ try{
   name:"original-source-isolated-resource-consumer",version:"0.0.0",
   private:true,type:"module"
  },null,2)+"\n");
- run("npm",["install","--ignore-scripts","--offline","--no-audit","--no-fund",
+ const registry=run("npm",["config","get","registry"],sourceRoot).trim();
+ run("npm",["install","--ignore-scripts","--registry",registry,"--no-audit","--no-fund",
   archiveOne],consumer);
  const consumerTest=String.raw`
 import assert from "node:assert/strict";
+import {
+  hostRatioOfRational, rationalOfHostRatio
+} from "@red-cup-engineering/exact-number-data-service/wire-ratio";
 import {
   deriveResourceEventReadings,
   compareResourceEventIntensityWindows,
@@ -83,6 +86,8 @@ import {
 } from "@red-cup-engineering/exact-number-data-service/discount-rate-bracket";
 const ni=x=>"ni:///sha-256;"+x.repeat(43);
 const amount=x=>({numerator:String(x),denominator:"1"});
+const wire={numerator:"9007199254740993",denominator:"2"};
+assert.deepEqual(hostRatioOfRational(rationalOfHostRatio(wire)),wire);
 const event=(id,time,count)=>({
  sourceObservationAddress:ni(id),observedAt:time,
  feedRef:ni("F"),resourceSubjectRef:ni("S"),

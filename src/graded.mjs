@@ -14,6 +14,7 @@
  */
 import { decimalOfRational, terminatingPlaces } from "./decimal-string.mjs";
 import { ratAdd, ratCompare, ratEqual, ratIsZero, ratMultiply, ratNegate, ratSign, ratSubtract, ratZero, divide, rationalOfBigInts, rationalParts } from "@red-cup-engineering/metrologic/number/exact-number";
+import { ratioTextOfRational } from "./ratio-text.mjs";
 
 const GRADED = "exactNumber.gradedRational";
 const requireGrade = (grade) => {
@@ -118,12 +119,12 @@ export function admitGraded(value, label = "graded rational") {
 // — readings —
 
 /** The exact audit string "num/den grade". */
-export const gradedToExactString = (g) => `${rationalParts(g.value).join("/")} ${g.grade}`;
+export const gradedToExactString = (g) => `${ratioTextOfRational(g.value)} ${g.grade}`;
 
 /** The exact decimal string of a graded value whose denominator terminates in base ten, else "num/den". */
 export function gradedToDecimalString(g) {
   const places = terminatingPlaces(g.value);
-  return places === null ? rationalParts(g.value).join("/") : decimalOfRational(g.value, places);
+  return places === null ? ratioTextOfRational(g.value) : decimalOfRational(g.value, places);
 }
 
 /** A graded value rendered at a fixed number of places (default: its terminating places, else 2),

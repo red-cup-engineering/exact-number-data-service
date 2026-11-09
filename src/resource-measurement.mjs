@@ -13,6 +13,7 @@
  */
 import {gradedFromParts,gradedSign,gradedValue} from './graded.mjs';
 import {rationalParts} from '@red-cup-engineering/metrologic/number/exact-number';
+import {hostRatioOfRational} from './wire-ratio.mjs';
 
 const NI=/^ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}$/u;
 const UNIT=/^(?:[A-Za-z][A-Za-z0-9._-]{0,48}|\{[A-Za-z][A-Za-z0-9._-]{0,46}\})$/u;
@@ -101,10 +102,9 @@ export function admitResourceQuantity(row){
  const [a,b]=rationalParts(gradedValue(initial));
  const measured=ratio((a*BigInt(scaleNum)).toString(),
   (b*BigInt(scaleDen)).toString(),resource,canonicalUnit);
- const [num,den]=rationalParts(gradedValue(measured));
  return Object.freeze({
   resource,unit:canonicalUnit,
-  amount:Object.freeze({numerator:num.toString(),denominator:den.toString()}),
+  amount:hostRatioOfRational(gradedValue(measured)),
   gradedAmount:measured,
   ...(unit===canonicalUnit?{}:{sourceUnit:unit}),
   interpretation:opaque?'source-defined-opaque-unit':'recognized-physical-dimension',

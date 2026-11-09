@@ -1,20 +1,21 @@
-/** Exact decimal-string arithmetic: BigInt-scaled, never a float, for balances and prices; and the
- *  crossing between decimal strings and exact rationals (a decimal is a rational over a power of ten). */
-import { rationalOfBigInts, rationalParts } from "@red-cup-engineering/metrologic/number/exact-number";
+/** Decimal text and fixed-scale projections of Metrologic rationals. */
+import {
+  divide, ratAdd, ratCompare, ratMultiply, ratNegate, ratSubtract, ratZero, rationalOfBigInts, rationalParts,
+} from "@red-cup-engineering/metrologic/number/exact-number";
 
 /**
  * @typedef {{ negative: boolean, whole: string, frac: string }} ParsedDecimal
  */
 
 /**
- * Parse a plain decimal string (optional leading `-`, digits, optional `.` and digits).
+ * Parse a plain decimal string with an optional sign and decimal point.
  * @param {string} text
  * @returns {ParsedDecimal}
  * @throws {TypeError} if `text` is not a plain decimal string
  */
 export function parseDecimal(text) {
   const trimmed = String(text).trim();
-  const match = /^(-)?(?:(\d+)(?:\.(\d*))?|\.(\d+))$/u.exec(trimmed);
+  const match = /^([+-])?(?:(\d+)(?:\.(\d*))?|\.(\d+))$/u.exec(trimmed);
   if (!match) throw new TypeError(`decimal: not a plain decimal string: ${JSON.stringify(text)}`);
   const [, sign, wholeWithFrac, fracAfterWhole, fracOnly] = match;
   const whole = wholeWithFrac ?? "0";
@@ -51,15 +52,14 @@ export function addDecimalStrings(values) {
   if (!Array.isArray(values) || values.length === 0) {
     throw new RangeError("decimal: addDecimalStrings requires a non-empty array");
   }
-  const parsed = values.map(parseDecimal);
-  const scale = Math.max(...parsed.map((p) => p.frac.length));
-  let total = 0n;
-  for (const p of parsed) {
-    const digits = `${p.whole}${p.frac.padEnd(scale, "0")}`;
-    const magnitude = BigInt(digits);
-    total += p.negative ? -magnitude : magnitude;
+  let scale = 0;
+  let total = ratZero;
+  for (const value of values) {
+    const parsed = parseDecimal(value);
+    scale = Math.max(scale, parsed.frac.length);
+    total = ratAdd(total, rationalOfParsedDecimal(parsed));
   }
-  return formatScaled(total, scale);
+  return truncatedRational(total, scale);
 }
 
 /**
@@ -73,13 +73,11 @@ export function addDecimalStrings(values) {
 export function multiplyDecimalStrings(a, b, maxDecimals = 10) {
   const left = parseDecimal(a);
   const right = parseDecimal(b);
-  const scale = left.frac.length + right.frac.length;
-  const leftMagnitude = BigInt(`${left.whole}${left.frac}`);
-  const rightMagnitude = BigInt(`${right.whole}${right.frac}`);
-  const magnitude = leftMagnitude * rightMagnitude;
-  const negative = left.negative !== right.negative;
-  const product = formatScaled(negative ? -magnitude : magnitude, scale);
-  return truncateDecimalString(product, maxDecimals);
+  if (!Number.isInteger(maxDecimals) || maxDecimals < 0)
+    throw new RangeError(`decimal: maxDecimals must be a non-negative integer, got ${maxDecimals}`);
+  const scale = Math.min(maxDecimals, left.frac.length + right.frac.length);
+  const product = ratMultiply(rationalOfParsedDecimal(left), rationalOfParsedDecimal(right));
+  return truncatedRational(product, scale);
 }
 
 /**
@@ -95,16 +93,7 @@ export function divideDecimalStrings(a, b, maxDecimals = 10) {
   if (!Number.isInteger(maxDecimals) || maxDecimals < 0) {
     throw new RangeError(`decimal: maxDecimals must be a non-negative integer, got ${maxDecimals}`);
   }
-  const left = parseDecimal(a);
-  const right = parseDecimal(b);
-  const leftMagnitude = BigInt(`${left.whole}${left.frac}`);
-  const rightMagnitude = BigInt(`${right.whole}${right.frac}`);
-  if (rightMagnitude === 0n) throw new RangeError("decimal: divideDecimalStrings cannot divide by zero");
-  const numerator = leftMagnitude * (10n ** BigInt(right.frac.length + maxDecimals));
-  const denominator = rightMagnitude * (10n ** BigInt(left.frac.length));
-  const quotient = numerator / denominator;
-  const negative = left.negative !== right.negative;
-  return formatScaled(negative ? -quotient : quotient, maxDecimals);
+  return truncatedRational(divide(rationalOfDecimal(a), rationalOfDecimal(b)), maxDecimals);
 }
 
 /**
@@ -124,16 +113,12 @@ export function truncateDecimalString(text, maxDecimals) {
 }
 
 /**
- * Negate a plain decimal string exactly; `"0"` and any all-zero magnitude negate to themselves
- * (never render as `"-0"`).
+ * Negate a plain decimal string and write its shortest exact decimal.
  * @param {string} text
  * @returns {string}
  */
 export function negateDecimalString(text) {
-  const { negative, whole, frac } = parseDecimal(text);
-  const body = frac === "" ? whole : `${whole}.${frac}`;
-  if (/^0(\.0*)?$/u.test(body)) return body;
-  return negative ? body : `-${body}`;
+  return exactDecimalOfRational(ratNegate(rationalOfDecimal(text)));
 }
 
 /**
@@ -143,9 +128,11 @@ export function negateDecimalString(text) {
  * @returns {-1 | 0 | 1} `-1` when `a < b`, `0` when equal, `1` when `a > b`.
  */
 export function compareDecimalStrings(a, b) {
-  const diff = addDecimalStrings([a, negateDecimalString(b)]);
-  if (/^-/u.test(diff)) return -1;
-  return /^0(\.0*)?$/u.test(diff) ? 0 : 1;
+  return ratCompare(rationalOfDecimal(a), rationalOfDecimal(b));
+}
+
+export function subtractDecimalStrings(a, b) {
+  return exactDecimalOfRational(ratSubtract(rationalOfDecimal(a), rationalOfDecimal(b)));
 }
 
 /**
@@ -189,17 +176,39 @@ export function formatUnits(magnitude, scale) {
 
 /** A plain decimal string as an exact rational: its digits over ten to its places. */
 export function rationalOfDecimal(text) {
-  const { negative, whole, frac } = parseDecimal(text);
-  return rationalOfBigInts(BigInt(`${whole}${frac}`) * (negative ? -1n : 1n), 10n ** BigInt(frac.length));
+  return rationalOfParsedDecimal(parseDecimal(text));
+}
+
+/** Read an exact rational together with the source's declared decimal scale. */
+export function readDecimal(text) {
+  const parsed = parseDecimal(text);
+  return Object.freeze({ value: rationalOfParsedDecimal(parsed), places: parsed.frac.length });
+}
+
+function rationalOfParsedDecimal({ negative, whole, frac }) {
+  const magnitude = BigInt(whole + frac);
+  return rationalOfBigInts(negative ? -magnitude : magnitude, 10n ** BigInt(frac.length));
+}
+
+function truncatedRational(value, places) {
+  return formatScaled(rationalUnits(value, places, { rounding: "toward-zero" }), places);
 }
 
 /** The fractional places at which a rational's decimal expansion terminates (the larger power of
  *  two or five in its reduced denominator), or null when the expansion recurs. */
 export function terminatingPlaces(q) {
   let d = rationalParts(q)[1], twos = 0, fives = 0;
+  if (d <= 0n) throw new RangeError("decimal: a rational needs a positive denominator");
   while (d % 2n === 0n) { d /= 2n; twos += 1; }
   while (d % 5n === 0n) { d /= 5n; fives += 1; }
   return d === 1n ? Math.max(twos, fives) : null;
+}
+
+/** Write the shortest finite decimal that equals the rational exactly. */
+export function exactDecimalOfRational(value) {
+  const places = terminatingPlaces(value);
+  if (places === null) throw new RangeError("ratio is not representable as a finite decimal");
+  return decimalOfRational(value, places);
 }
 
 const ROUNDINGS = new Set(["half-away-from-zero", "half-even", "toward-zero"]);
@@ -222,13 +231,7 @@ export function rationalUnits(q, places, { rounding = "half-away-from-zero" } = 
 
 /** An exact rational as a decimal string at `places` fractional digits, rounded as rationalUnits rounds. */
 export function decimalOfRational(q, places, options) {
-  const units = rationalUnits(q, places, options), negative = units < 0n;
-  let digits = (negative ? -units : units).toString();
-  if (places > 0) {
-    digits = digits.padStart(places + 1, "0");
-    digits = `${digits.slice(0, digits.length - places)}.${digits.slice(digits.length - places)}`;
-  }
-  return (negative ? "-" : "") + digits;
+  return formatUnits(rationalUnits(q, places, options), places);
 }
 
 /** Expand decimal notation exactly, preserving coefficient digits and plain-input precision.

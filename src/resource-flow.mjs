@@ -16,6 +16,7 @@ import {admitResourceMeasurement,admitResourceMeasurements,admitResourceQuantiti
 import {gradedAdd,gradedCompare,gradedFromParts,gradedQuotient,gradedSubtract,gradedRatio,gradedValue} from './graded.mjs';
 import {rationalParts} from '@red-cup-engineering/metrologic/number/exact-number';
 import {UTC_WINDOWS,utcWindowsAt} from './utc-windows.mjs';
+import {hostRatioOfRational} from './wire-ratio.mjs';
 
 export const RESOURCE_FLOW_WINDOWS=UTC_WINDOWS;
 
@@ -40,10 +41,7 @@ const instant=(value,name)=>{
   invalid(name+' is not a real canonical UTC instant');
  return parsed;
 };
-const exactAmount=value=>{
- const [numerator,denominator]=rationalParts(gradedValue(value));
- return Object.freeze({numerator:numerator.toString(),denominator:denominator.toString()});
-};
+const exactAmount=value=>hostRatioOfRational(gradedValue(value));
 const order=(a,b)=>a<b?-1:a>b?1:0;
 
 /**
@@ -308,16 +306,13 @@ export function compareResourceFlowWindows({
   const before=amountOf(b),after=amountOf(a);
   // Both grades must be equal; the shared rational tower owns all arithmetic.
   const difference=gradedSubtract(after,before);
-  const [num,den]=rationalParts(gradedValue(difference));
+  const [num]=rationalParts(gradedValue(difference));
   const baselineParts=rationalParts(gradedValue(before));
   const changeRatio=baselineParts[0]===0n?null:gradedRatio(after,before);
-  const ratio=changeRatio===null?null:rationalParts(changeRatio);
   return Object.freeze({
    ...common,
-   difference:Object.freeze({numerator:num.toString(),denominator:den.toString()}),
-   successorOverBaseline:ratio===null?null:Object.freeze({
-    numerator:ratio[0].toString(),denominator:ratio[1].toString()
-   }),
+   difference:exactAmount(difference),
+   successorOverBaseline:changeRatio===null?null:hostRatioOfRational(changeRatio),
    direction:num<0n?'decrease':num>0n?'increase':'unchanged',
    interpretation:row.aggregation==='peak'
     ?'window-maximum-difference-not-additive-consumption'
@@ -423,10 +418,6 @@ export function compareResourceFlowIntensityWindows({
   BigInt(afterOutcome.acceptedUnits.denominator),'reported-functional-output:'+unit);
  const withoutWork=beforeOutcome.acceptedUnits.numerator==='0'||
    afterOutcome.acceptedUnits.numerator==='0';
- const exact=x=>{
-  const [n,d]=rationalParts(gradedValue(x));
-  return Object.freeze({numerator:n.toString(),denominator:d.toString()});
- };
  const readings=resourceComparison.readings.map(row=>{
   if(row.status!=='observed-exact-difference')
    return Object.freeze({...row,
@@ -450,17 +441,13 @@ export function compareResourceFlowIntensityWindows({
   const [n]=rationalParts(gradedValue(difference));
   const [beforeN]=rationalParts(gradedValue(previous));
   const relative=beforeN===0n?null:gradedRatio(successor,previous);
-  const relativeExact=relative===null?null:(()=>{
-   const [a,b]=rationalParts(relative);
-   return Object.freeze({numerator:a.toString(),denominator:b.toString()});
-  })();
   return Object.freeze({...row,
    intensityStatus:'exact-per-reported-accepted-unit-not-receiver-verified',
    functionalUnitRef:unit,
-   baselinePerReportedAcceptedUnit:exact(previous),
-   successorPerReportedAcceptedUnit:exact(successor),
-   differencePerReportedAcceptedUnit:exact(difference),
-   successorOverBaselineIntensity:relativeExact,
+   baselinePerReportedAcceptedUnit:exactAmount(previous),
+   successorPerReportedAcceptedUnit:exactAmount(successor),
+   differencePerReportedAcceptedUnit:exactAmount(difference),
+   successorOverBaselineIntensity:relative===null?null:hostRatioOfRational(relative),
    intensityDirection:n<0n?'decrease':n>0n?'increase':'unchanged',
    interpretation:'exact-source-consumption-divided-by-unverified-reported-output; total-use-delta-retained'
   });
@@ -581,10 +568,6 @@ export function compareResourceEventIntensityWindows({
   BigInt(secondOutcome.acceptedUnits.numerator),
   BigInt(secondOutcome.acceptedUnits.denominator),
   'reported-functional-output:'+unit);
- const exact=graded=>{
-  const [numerator,denominator]=rationalParts(gradedValue(graded));
-  return Object.freeze({numerator:numerator.toString(),denominator:denominator.toString()});
- };
  const readings=keys.map(dimension=>{
   const b=left.get(dimension),a=right.get(dimension),row=b??a;
   const baseline=b?Object.freeze({amount:b.amount,sourceCount:b.sourceCount}):null;
@@ -620,17 +603,12 @@ export function compareResourceEventIntensityWindows({
   const [sign]=rationalParts(gradedValue(difference));
   const [baseNumerator]=rationalParts(gradedValue(previousIntensity));
   const rawRatio=baseNumerator===0n?null:gradedRatio(nextIntensity,previousIntensity);
-  const relative=rawRatio===null?null:(()=>{
-   const [numerator,denominator]=rationalParts(rawRatio);
-   return Object.freeze({numerator:numerator.toString(),
-    denominator:denominator.toString()});
-  })();
   return Object.freeze({...common,
-   totalRecordedEventDifference:exact(totalDifference),
-   baselinePerReportedAcceptedUnit:exact(previousIntensity),
-   successorPerReportedAcceptedUnit:exact(nextIntensity),
-   differencePerReportedAcceptedUnit:exact(difference),
-   successorOverBaselineIntensity:relative,
+   totalRecordedEventDifference:exactAmount(totalDifference),
+   baselinePerReportedAcceptedUnit:exactAmount(previousIntensity),
+   successorPerReportedAcceptedUnit:exactAmount(nextIntensity),
+   differencePerReportedAcceptedUnit:exactAmount(difference),
+   successorOverBaselineIntensity:rawRatio===null?null:hostRatioOfRational(rawRatio),
    intensityDirection:sign<0n?'decrease':sign>0n?'increase':'unchanged',
    intensityStatus:'conditional-source-event-subset-not-complete-or-receiver-verified'});
  });
