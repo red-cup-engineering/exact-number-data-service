@@ -84,6 +84,10 @@ import {
   computeDiscountRateBracketWork,
   verifyDiscountRateBracketWork
 } from "@red-cup-engineering/exact-number-data-service/discount-rate-bracket";
+import {
+  computeExactResourceMathWork, replayExactResourceMathWork
+} from "@red-cup-engineering/exact-number-data-service/exact-resource-work";
+import { occupationEntropy } from "@red-cup-engineering/exact-number-data-service/occupation-entropy";
 const ni=x=>"ni:///sha-256;"+x.repeat(43);
 const amount=x=>({numerator:String(x),denominator:"1"});
 const wire={numerator:"9007199254740993",denominator:"2"};
@@ -139,12 +143,27 @@ changedPayment.cashFlows[2].amount="56";
 assert.equal(verifyDiscountRateBracketWork(financeSource,changedPayment).ok,false);
 assert.equal(verifyDiscountRateBracketWork({...financeSource,
  cashFlows:[{period:0,amount:"-100"},{period:1,amount:"110"}]},financeResult).ok,false);
+const work = {
+ nodes: ["A", "B"],
+ links: [{ id: "ab", from: "A", to: "B", capacity: "10", unitResourceCost: "2" }],
+ sources: [{ node: "A", capacity: "10" }],
+ demands: [{ node: "B", amount: "9" }],
+ budget: "5"
+};
+const answer = JSON.parse(JSON.stringify(computeExactResourceMathWork(work)));
+assert.equal(answer.result.withBudget.delivered, "5/2");
+assert.equal(replayExactResourceMathWork(work, answer).admitted, true);
+answer.result.withBudget.resourceCost = "4";
+assert.equal(replayExactResourceMathWork(work, answer).admitted, false);
+assert.equal(occupationEntropy([1, 1]).entropyBits, 1);
 process.stdout.write(JSON.stringify({
  consumer:"isolated-packed-artifact",eventIntensity:result.readings[0].intensityDirection,
  sourcePopulationVerified:result.sourceEventCollectionCompletenessVerified,
  originalSourceEvidenceOnly:true,
   packedSourceFinancialRateVerified:true,
-  packedSourceFinancialForgeryRefused:true
+  packedSourceFinancialForgeryRefused:true,
+  packedSourceResourceCertificateVerified:true,
+  packedSourceOccupationEntropyReceived:true
  })+"\n");
 `;
  writeFileSync(join(consumer,"acceptance.mjs"),consumerTest);
@@ -153,13 +172,15 @@ process.stdout.write(JSON.stringify({
  assert.equal(parsed.consumer,"isolated-packed-artifact");
  assert.equal(parsed.packedSourceFinancialRateVerified,true);
  assert.equal(parsed.packedSourceFinancialForgeryRefused,true);
+ assert.equal(parsed.packedSourceResourceCertificateVerified,true);
+ assert.equal(parsed.packedSourceOccupationEntropyReceived,true);
  process.stdout.write(JSON.stringify({
   kind:"source-pinned-exact-resource-packaging-receipt",
   sourcePackage:manifest.name+"@"+manifest.version,
   sha256:hashOne,repeatSha256:hashTwo,
   deterministic:true,isolatedPackedConsumerPassed:true,
   imported:"./resource-flow",
-  additionallyReceived:"./discount-rate-bracket",
+  additionallyReceived:["./discount-rate-bracket","./exact-resource-work","./occupation-entropy"],
   downstreamReleaseInstalled:false,
   nativeProviderOutcomeReceived:false,
   originalConsumer:parsed

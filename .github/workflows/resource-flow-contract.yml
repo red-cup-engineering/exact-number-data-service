@@ -66,4 +66,4 @@ jobs:
       - name: Verify exact-number package contracts
         run: npm test
       - name: Fabricate twice and receive exact resource and finance APIs in an isolated consumer
-        run: node scripts/assay-resource-flow-package.mjs
+        run: npm run test:receiving

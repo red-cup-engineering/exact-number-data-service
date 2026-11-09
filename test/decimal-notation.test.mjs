@@ -1,3 +1,4 @@
+import { localizedDecimalOfRational, readLocalizedDecimal } from "../src/decimal-string.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -37,4 +38,13 @@ test("notation expands into exact arithmetic without rounding coefficient digits
   assert.equal(expandDecimalNotation("2.000"), "2.000");
   assert.throws(() => expandDecimalNotation("Infinity"), TypeError);
   assert.throws(() => expandDecimalNotation("1e1000001"), RangeError);
+});
+
+test("localized ledger decimals preserve exact value and authored places", () => {
+  const value = readLocalizedDecimal("-1.234.567,0500", { decimalMark: "," });
+  assert.equal(value.places, 4);
+  assert.equal(localizedDecimalOfRational(value.value, 4, { decimalMark: ".", grouping: true }), "-1,234,567.0500");
+  assert.equal(localizedDecimalOfRational(value.value, 2, { decimalMark: "," }), "-1234567,05");
+  assert.throws(() => readLocalizedDecimal("12,34.50", { decimalMark: "." }), /invalid grouping/);
+  assert.throws(() => readLocalizedDecimal("12.3,4", { decimalMark: "." }), /invalid fractional digits/);
 });

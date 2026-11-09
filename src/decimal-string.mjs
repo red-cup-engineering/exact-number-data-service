@@ -194,6 +194,28 @@ function truncatedRational(value, places) {
   return formatScaled(rationalUnits(value, places, { rounding: "toward-zero" }), places);
 }
 
+function groupingMark(decimalMark) {
+  if (decimalMark === ".") return ",";
+  if (decimalMark === ",") return ".";
+  throw new TypeError("decimal: decimal mark must be a point or comma");
+}
+
+/** Read decimal text with an explicitly selected decimal mark and optional grouping. */
+export function readLocalizedDecimal(text, { decimalMark } = {}) {
+  const grouping = groupingMark(decimalMark);
+  if (typeof text !== "string") throw new TypeError("decimal: localized decimal text is required");
+  const parts = text.trim().split(decimalMark);
+  const [whole, fraction] = parts;
+  if (parts.length > 2 || fraction?.includes(grouping))
+    throw new TypeError("decimal: invalid fractional digits");
+  const groups = whole.split(grouping);
+  if (groups.length > 1 && (!/^[+-]?\d{1,3}$/u.test(groups[0]) ||
+      groups.slice(1).some(group => !/^\d{3}$/u.test(group)))) {
+    throw new TypeError("decimal: invalid grouping");
+  }
+  return readDecimal(groups.join("") + (fraction === undefined ? "" : "." + fraction));
+}
+
 /** The fractional places at which a rational's decimal expansion terminates (the larger power of
  *  two or five in its reduced denominator), or null when the expansion recurs. */
 export function terminatingPlaces(q) {
@@ -232,6 +254,20 @@ export function rationalUnits(q, places, { rounding = "half-away-from-zero" } = 
 /** An exact rational as a decimal string at `places` fractional digits, rounded as rationalUnits rounds. */
 export function decimalOfRational(q, places, options) {
   return formatUnits(rationalUnits(q, places, options), places);
+}
+
+/** Write an exact value at a declared scale using the selected decimal and grouping marks. */
+export function localizedDecimalOfRational(value, places, { decimalMark, rounding, grouping = false } = {}) {
+  const group = groupingMark(decimalMark);
+  let [whole, fraction] = decimalOfRational(value, places, { rounding }).split(".");
+  if (grouping) {
+    const signLength = whole.startsWith("-") ? 1 : 0;
+    const digits = whole.length - signLength;
+    const head = signLength + (digits % 3 || 3);
+    const groups = whole.slice(head).match(/\d{3}/gu) ?? [];
+    whole = [whole.slice(0, head), ...groups].join(group);
+  }
+  return whole + (fraction === undefined ? "" : decimalMark + fraction);
 }
 
 /** Expand decimal notation exactly, preserving coefficient digits and plain-input precision.

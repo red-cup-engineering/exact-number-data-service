@@ -16,7 +16,10 @@
     "./exact-cash-flow-work.schema.json": "./data/schema/exact-cash-flow-work.schema.json",
     "./discount-rate-bracket": "./src/discount-rate-bracket.mjs",
     "./discount-rate-bracket-request.schema.json": "./data/schema/discount-rate-bracket-request.schema.json",
-    "./discount-rate-bracket-result.schema.json": "./data/schema/discount-rate-bracket-result.schema.json"
+    "./discount-rate-bracket-result.schema.json": "./data/schema/discount-rate-bracket-result.schema.json",
+    "./occupation-entropy": "./src/occupation-entropy.mjs",
+    "./exact-resource-work": "./src/exact-resource-work.mjs",
+    "./package.json": "./package.json"
   },
   "files": [
     "src",
@@ -24,7 +27,10 @@
     "bin",
     "data/schema",
     "test/cash-flow.test.mjs",
-    "test/discount-rate-bracket.test.mjs"
+    "test/decimal-notation.test.mjs",
+    "test/discount-rate-bracket.test.mjs",
+    "test/exact-resource-work.test.mjs",
+    "test/occupation-entropy.test.mjs"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
   "private": false,
@@ -34,9 +40,11 @@
   },
   "scripts": {
     "test": "node --test test/*.test.mjs",
+    "test:receiving": "node scripts/assay-resource-flow-package.mjs",
     "pack:dry-run": "npm pack --dry-run --ignore-scripts"
   },
   "type": "module",
+  "engines": { "node": ">=24.2.0" },
   "version": "0.2.2",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
@@ -48,13 +56,16 @@
   },
   "receivingTests": [
     "test/cash-flow.test.mjs",
-    "test/discount-rate-bracket.test.mjs"
+    "test/decimal-notation.test.mjs",
+    "test/discount-rate-bracket.test.mjs",
+    "test/exact-resource-work.test.mjs",
+    "test/occupation-entropy.test.mjs"
   ],
   "dependencies": {
-    "@red-cup-engineering/metrologic": "0.21.0",
-    "@red-cup-engineering/signcell": "0.17.1",
-    "@red-cup-engineering/signchain": "0.6.1",
-    "@red-cup-engineering/signcraft": "0.9.1",
-    "@red-cup-engineering/signgraph": "0.9.1"
+    "@red-cup-engineering/metrologic": "0.22.0",
+    "@red-cup-engineering/signcell": "0.17.3",
+    "@red-cup-engineering/signchain": "0.6.3",
+    "@red-cup-engineering/signcraft": "0.9.3",
+    "@red-cup-engineering/signgraph": "0.9.3"
   }
 }

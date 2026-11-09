@@ -15,6 +15,13 @@ This is source recovery, not independent publication or completed consumer migra
 
 Pack this supplier from its own directory with `npm pack --ignore-scripts`, then install the resulting archive in the consumer with `npm install --ignore-scripts /path/to/archive.tgz`. Import `@red-cup-engineering/exact-number-data-service/decimal-string` for decimal text and `@red-cup-engineering/exact-number-data-service/wire-ratio` for reduced pairs of integer strings. Metrologic supplies the arithmetic at `@red-cup-engineering/metrologic/number/exact-number`.
 
+`./exact-resource-work` admits the market's ratio text, records the original model
+and result as Cells, and reads independent solver certificates through the Sign
+family. Metrologic supplies the exact optimizer and verifier. `./occupation-entropy`
+reads bounded occupation counts as floating-point bits. It admits at most 100,000
+cells and 1,000,000 objects per input.
+
+
 ```js
 import {
   hostRatioOfRational, rationalOfHostRatio,
