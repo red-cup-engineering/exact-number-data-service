@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "basis": "Round exact rational values according to an explicit rounding rule.",
+  "cases": [
+    {
+      "id": "EXACT-ROUNDING-REFUSAL",
+      "role": "source",
+      "kind": "refusal",
+      "claim": "An unrecognized rounding rule is refused.",
+      "file": "test/decimal-rounding.test.mjs",
+      "test": "half-even pads exact values and still refuses an unknown rounding"
+    },
+    {
+      "id": "EXACT-ROUNDING-QUICKSTART",
+      "role": "consumer",
+      "kind": "example",
+      "claim": "An installed caller distinguishes half-even from the default at an exact tie.",
+      "file": "examples/quickstart.test.mjs"
+    }
+  ]
+}

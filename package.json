@@ -30,7 +30,9 @@
     "test/decimal-notation.test.mjs",
     "test/discount-rate-bracket.test.mjs",
     "test/exact-resource-work.test.mjs",
-    "test/occupation-entropy.test.mjs"
+    "test/occupation-entropy.test.mjs",
+    "docs/API.md",
+    "examples/quickstart.test.mjs"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
   "private": false,
@@ -41,10 +43,13 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "test:receiving": "node scripts/assay-resource-flow-package.mjs",
-    "pack:dry-run": "npm pack --dry-run --ignore-scripts"
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts",
+    "test:consumer": "node --test examples/quickstart.test.mjs"
   },
   "type": "module",
-  "engines": { "node": ">=24.2.0" },
+  "engines": {
+    "node": ">=24.2.0"
+  },
   "version": "0.2.2",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"

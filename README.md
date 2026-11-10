@@ -541,3 +541,7 @@ Event streams without a known customer actor retain
 \`attribution:consumer-unattributed\` in the projections, rather than
 fabricating one. These are reusable numerical projections: consumers supply
 genuine identified events from their own typed SEAVT storage.
+
+## Acceptance
+
+Run `npm test` for the source suite. See the [API reference](docs/API.md) and [runnable consumer example](examples/quickstart.test.mjs).
