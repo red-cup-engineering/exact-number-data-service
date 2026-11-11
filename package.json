@@ -50,7 +50,7 @@
   "engines": {
     "node": ">=24.2.0"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "bin": {
     "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
   },
