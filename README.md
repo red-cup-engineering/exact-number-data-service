@@ -544,4 +544,4 @@ genuine identified events from their own typed SEAVT storage.
 
 ## Acceptance
 
-Run `npm test` for the source suite. See the [API reference](docs/API.md) and [runnable consumer example](examples/quickstart.test.mjs).
+Run `npm test` for the source suite. See the [runnable consumer example](examples/quickstart.test.mjs).

@@ -31,7 +31,6 @@
     "test/discount-rate-bracket.test.mjs",
     "test/exact-resource-work.test.mjs",
     "test/occupation-entropy.test.mjs",
-    "docs/API.md",
     "examples/quickstart.test.mjs"
   ],
   "name": "@red-cup-engineering/exact-number-data-service",
