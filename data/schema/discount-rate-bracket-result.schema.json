@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/number/discount-rate-bracket-result.schema.json",
+  "title": "Exact unique discount-rate root interval receipt",
+  "description": "Schema validates representation only; original source evidence and mathematical root proof require verifyDiscountRateBracketWork.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "currency",
+    "periodUnit",
+    "cashFlows",
+    "lowerRate",
+    "upperRate",
+    "requestedIterations",
+    "iterationsPerformed",
+    "exactRoot",
+    "lower",
+    "upper",
+    "guaranteedUnique",
+    "scope"
+  ],
+  "properties": {
+    "kind": {
+      "const": "exact-number.discount-rate-bracket/v1"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{2,11}$"
+    },
+    "periodUnit": {
+      "enum": [
+        "day",
+        "month",
+        "year"
+      ]
+    },
+    "cashFlows": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 24,
+      "items": {
+        "$ref": "#/$defs/payment"
+      }
+    },
+    "lowerRate": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "maxLength": 34
+    },
+    "upperRate": {
+      "type": "string",
+      "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$",
+      "maxLength": 34
+    },
+    "requestedIterations": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32
+    },
+    "iterationsPerformed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 32
+    },
+    "exactRoot": {
+      "type": "boolean"
+    },
+    "lower": {
+      "$ref": "#/$defs/endpoint"
+    },
+    "upper": {
+      "$ref": "#/$defs/endpoint"
+    },
+    "guaranteedUnique": {
+      "const": true
+    },
+    "scope": {
+      "const": "unique conditional root of strictly decreasing discrete-period NPV on the admitted interval"
+    }
+  },
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rate",
+        "npv"
+      ],
+      "properties": {
+        "rate": {
+          "$ref": "#/$defs/rate"
+        },
+        "npv": {
+          "$ref": "#/$defs/npv"
+        }
+      }
+    },
+    "rate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "num",
+        "den"
+      ],
+      "properties": {
+        "kind": {
+          "const": "exactNumber.rational"
+        },
+        "num": {
+          "type": "string",
+          "pattern": "^(?:0|-?[1-9][0-9]*)$",
+          "maxLength": 129
+        },
+        "den": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 128
+        }
+      }
+    },
+    "npv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "num",
+        "den"
+      ],
+      "properties": {
+        "kind": {
+          "const": "exactNumber.rational"
+        },
+        "num": {
+          "type": "string",
+          "pattern": "^(?:0|-?[1-9][0-9]*)$",
+          "maxLength": 8193
+        },
+        "den": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 8192
+        }
+      }
+    }
+  }
+}

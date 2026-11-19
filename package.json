@@ -1,0 +1,58 @@
+{
+  "description": "Exact integer, rational and decimal-string arithmetic, affine solution families, rank and nullity.",
+  "exports": {
+    "./decimal-string": "./src/decimal-string.mjs",
+    "./wire-ratio": "./src/wire-ratio.mjs",
+    "./ratio-text": "./src/ratio-text.mjs",
+    "./graded": "./src/graded.mjs",
+    "./resource-measurement": "./src/resource-measurement.mjs",
+    "./framework-rigidity": "./src/framework-rigidity.mjs",
+    "./resource-flow": "./src/resource-flow.mjs",
+    "./cash-flow": "./src/cash-flow.mjs",
+    "./cash-flow-request.schema.json": "./data/schema/cash-flow-request.schema.json",
+    "./cash-flow-result.schema.json": "./data/schema/cash-flow-result.schema.json",
+    "./exact-cash-flow-work": "./src/exact-cash-flow-work.mjs",
+    "./exact-cash-flow-work.schema.json": "./data/schema/exact-cash-flow-work.schema.json",
+    "./discount-rate-bracket": "./src/discount-rate-bracket.mjs",
+    "./discount-rate-bracket-request.schema.json": "./data/schema/discount-rate-bracket-request.schema.json",
+    "./discount-rate-bracket-result.schema.json": "./data/schema/discount-rate-bracket-result.schema.json",
+    "./occupation-entropy": "./src/occupation-entropy.mjs",
+    "./exact-resource-work": "./src/exact-resource-work.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "bin",
+    "data/schema"
+  ],
+  "name": "@red-cup-engineering/exact-number-data-service",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/exact-number-data-service.git"
+  },
+  "scripts": {
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24.2.0"
+  },
+  "version": "0.2.8-dev.0",
+  "bin": {
+    "readout-framework-rigidity": "./bin/readout-framework-rigidity.mjs"
+  },
+  "license": "MIT",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  },
+  "dependencies": {
+    "@red-cup-engineering/economic-engine": "^0.1.2",
+    "@red-cup-engineering/exact-number-codec": "^0.1.0",
+    "@red-cup-engineering/financial-engine": "^0.1.1",
+    "@red-cup-engineering/information-engine": "^0.1.0",
+    "@red-cup-engineering/metrologic": "^0.22.3"
+  }
+}
