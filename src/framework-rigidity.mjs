@@ -39,7 +39,7 @@ function negate(value) {
   return exactString(-num, den);
 }
 
-function validate(vertices, contacts) {
+function admit(vertices, contacts) {
   if (!Array.isArray(vertices) || vertices.length < 2) {
     throw new TypeError("vertices must contain at least two exact coordinate vectors");
   }
@@ -75,7 +75,7 @@ function validate(vertices, contacts) {
 
 /** Rows of the exact infinitesimal rigidity matrix, in supplied contact order. */
 export function frameworkRigidityRows(vertices, contacts) {
-  const { dimension, coordinates, bonds } = validate(vertices, contacts);
+  const { dimension, coordinates, bonds } = admit(vertices, contacts);
   const columns = vertices.length * dimension;
   return bonds.map(([left, right]) => {
     const row = Array(columns).fill("0");
@@ -94,7 +94,7 @@ export function frameworkRigidityRows(vertices, contacts) {
  * We deliberately do NOT identify that nullity with the physical softness
  * or bulk modulus of any material sample.
  */
-export function frameworkRigidityReport(vertices, contacts) {
+export function frameworkRigidityReadout(vertices, contacts) {
   const rows = frameworkRigidityRows(vertices, contacts);
   const dimension = vertices[0].length;
   const columns = vertices.length * dimension;

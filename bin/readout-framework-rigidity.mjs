@@ -5,14 +5,14 @@
  * stdout: one frameworkRigidityReadout JSON, no synthetic measurements.
  */
 import { readFileSync } from "node:fs";
-import { frameworkRigidityReport } from "../src/framework-rigidity.mjs";
+import { frameworkRigidityReadout } from "../src/framework-rigidity.mjs";
 
 try {
   const source = JSON.parse(readFileSync(0, "utf8"));
   if (!source || typeof source !== "object" || Array.isArray(source)) {
     throw new TypeError("request must be an object with vertices and contacts");
   }
-  const output = frameworkRigidityReport(source.vertices, source.contacts);
+  const output = frameworkRigidityReadout(source.vertices, source.contacts);
   process.stdout.write(`${JSON.stringify(output)}\n`);
 } catch (error) {
   process.stderr.write(`exact framework rigidity refusal: ${error.message}\n`);

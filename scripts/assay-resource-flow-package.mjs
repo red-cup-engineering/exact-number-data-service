@@ -168,8 +168,8 @@ process.stdout.write(JSON.stringify({
  })+"\n");
 `;
  writeFileSync(join(consumer,"acceptance.mjs"),consumerTest);
- const record=run("node",["acceptance.mjs"],consumer).trim();
- const parsed=JSON.parse(record);
+ const receipt=run("node",["acceptance.mjs"],consumer).trim();
+ const parsed=JSON.parse(receipt);
  assert.equal(parsed.consumer,"isolated-packed-artifact");
  assert.equal(parsed.packedSourceFinancialRateVerified,true);
  assert.equal(parsed.packedSourceFinancialForgeryRefused,true);
