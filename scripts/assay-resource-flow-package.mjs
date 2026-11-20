@@ -1,3 +1,4 @@
+import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 /**
  * The original exact-number package producer must fabricate reproducible
  * source-pinned tarballs and be received by a truly isolated Node consumer.
@@ -8,13 +9,15 @@
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
-import {mkdtempSync,mkdirSync,readFileSync,rmSync,writeFileSync} from "node:fs";
-import {tmpdir} from "node:os";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+
 import {dirname,join} from "node:path";
 import {fileURLToPath} from "node:url";
 
 const sourceRoot=dirname(dirname(fileURLToPath(import.meta.url)));
-const scratch=mkdtempSync(join(tmpdir(),"exact-number-pack-receive-"));
+const temporaryDirectory = makeTemporaryDirectory("exact-number-pack-receive");
+try {
+const scratch=temporaryDirectory.path;
 const environment={
  ...process.env,
  npm_config_ignore_scripts:"true",
@@ -188,4 +191,8 @@ process.stdout.write(JSON.stringify({
  },null,2)+"\n");
 }finally{
  rmSync(scratch,{force:true,recursive:true});
+}
+
+} finally {
+  temporaryDirectory.remove();
 }

@@ -53,6 +53,7 @@
     "@red-cup-engineering/exact-number-codec": "^0.1.0",
     "@red-cup-engineering/financial-engine": "^0.1.1",
     "@red-cup-engineering/information-engine": "^0.1.0",
-    "@red-cup-engineering/metrologic": "^0.22.3"
+    "@red-cup-engineering/metrologic": "^0.22.3",
+    "@red-cup-engineering/computer-file-engineering-services-section": "^0.8.16"
   }
 }
