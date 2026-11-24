@@ -1,0 +1,548 @@
+# Exact number data service
+
+<!-- 561-group-standards:badges:start -->
+[![Red Cup Engineering](https://img.shields.io/badge/561%20Group-Red%20Cup%20Engineering-c0392b)](https://github.com/red-cup-engineering)
+[![License: MIT](https://img.shields.io/badge/license-MIT-c0392b)](LICENSE)
+[![Indigenous data: CARE](https://img.shields.io/badge/Indigenous%20data-CARE-4b6f44)](https://github.com/red-cup-engineering/.github/blob/main/GOVERNANCE.md)
+[![Tips welcome](https://img.shields.io/badge/tips-welcome-d4a017)](https://github.com/561-group/.github/blob/main/TIPS.md)
+<!-- 561-group-standards:badges:end -->
+
+Shared exact integer, rational, matrix and decimal arithmetic recovered from the installed Bare Cedar Fog source into Red Cup data engineering. Values use decimal strings and BigInt arithmetic rather than binary floating point. Decimal conversion, arithmetic and rational conversion remain separate exported operations; division precision is selected by its caller.
+
+This is source recovery, not independent publication or completed consumer migration. The old snapshot routes remain until consumers can receive this supplier. The computational carriers are preserved; comments about scientific theory are provenance, not proof of scientific approval or full Sign primitive composition.
+
+## Receive this package
+
+Pack this supplier from its own directory with `npm pack --ignore-scripts`, then install the resulting archive in the consumer with `npm install --ignore-scripts /path/to/archive.tgz`. Import `@red-cup-engineering/exact-number-data-service/decimal-string` for decimal text and `@red-cup-engineering/exact-number-data-service/wire-ratio` for reduced pairs of integer strings. Metrologic supplies the arithmetic at `@red-cup-engineering/metrologic/number/exact-number`.
+
+`./exact-resource-work` admits the market's ratio text, records the original model
+and result as Cells, and reads independent solver certificates through the Sign
+family. Metrologic supplies the exact optimizer and verifier. The
+`./occupation-entropy` compatibility export forwards the bounded readout of up to
+100,000 cells and 1,000,000 objects to the Information Engine. New callers can
+import `@red-cup-engineering/information-engine/occupation-entropy` directly.
+
+
+```js
+import {
+  hostRatioOfRational, rationalOfHostRatio,
+} from "@red-cup-engineering/exact-number-data-service/wire-ratio";
+
+const half = rationalOfHostRatio({ numerator: "1", denominator: "2" });
+const wire = hostRatioOfRational(half);
+```
+
+The wire decoder admits reduced integer strings with a positive denominator.
+The encoder preserves every digit, including integers beyond JavaScript's
+safe integer range.
+
+Use `/ratio-text` for reduced slash notation. In `/decimal-string`,
+`readDecimal` retains the source's declared scale alongside the exact value.
+`decimalOfRational` writes at an explicit precision and rounding rule.
+`exactDecimalOfRational` writes the shortest exact finite decimal and
+refuses a repeating expansion.
+
+The package archive was installed into an isolated consumer with no snapshot or custom resolver. Exact arithmetic retained `1e-25` and integer coefficients above binary precision. This establishes local package reception; it does not establish registry publication, an enduring shared distribution endpoint or production migration.
+
+`./graded` preserves exact commodity and dimension grades, with canonical JSON admission, same-grade arithmetic, explicit grade products/quotients and conservation operations. This source was recovered from Bare Cedar Fog c677e9999ea05bf577f9355660687e56dffd3da9 without replacing unknown values with zeros. It does not establish Actor ownership, budget admission or a general resource model. An independent packed-package consumer demonstrated exact large-quantity addition, JSON round-trip admission and refusal to add HIVE to HBD; the recovered Hive reward consumer demonstrated exact HIVE/VESTS conversion in both directions. Other snapshot consumers remain to migrate.
+
+## Exact-coordinate framework rigidity (2D and 3D)
+
+The existing exact rational matrix engine now has a specific, finite
+bar-and-joint framework realization producer:
+[`src/framework-rigidity.mjs`](src/framework-rigidity.mjs). It constructs
+edge displacement rows and calls the original `ratRank`—no copied linear
+algebra, no floating-point geometry. The corresponding local command accepts
+one JSON object on stdin:
+
+```sh
+printf '%s\n' '{"vertices":[[0,0],[2,0],[0,3],[3,4],[5,2]],"contacts":[[0,1],[0,2],[1,2],[0,3],[1,3],[1,4],[2,4]]}' \
+  | node services/number-services-section/services/exact-number-data-service/bin/readout-framework-rigidity.mjs
+```
+
+The rank is **7** for this five-site source-derived contact graph; exchange
+the last seven-contact pattern for
+`[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3],[3,4]]` and it becomes **6**.
+Both have identical vertex/contact counts. In three dimensions a genuine
+tetrahedron's K4 rigidity matrix has rank **6** while a coplanar K4
+realization has rank **5**. The module reuses the same source-owned exact
+rational-number parser, including fractional and very large integer
+coordinates; invalid and duplicate contacts fail before computation.
+
+This is the missing distinction between **generic combinatorial planar
+rigidity** (Laman/pebble graph test) and **the exact infinitesimal rigidity of a
+particular 2D/3D embedding**. A 3D matrix rank is not a combinatorial test
+for all geometric positions, and a structural model is not a calibrated
+measurement, proof of vitrimer chemistry, or prediction of elastic modulus.
+Lenticule Science's source is the October 1
+*Associative Exchange and the Ring–Chain Ledger*, §1. Specific specimen
+measurement, coordinate provenance and physical receiving remain separate.
+The source export and command are new; registry publication and dependent
+installation are not established by a source commit.
+
+## Resource flow over observed seconds
+
+The original "./resource-measurement" export admits graded noncurrency quantities with exact rational units. It recognizes disk reads/writes, network ingress/egress, CPU user/system/runtime, RAM residency and peak, inference token classes, energy and GPU runtime. Bit and byte amounts normalize to exact bytes; milliseconds normalize to exact seconds. No token-to-money or physical-to-money exchange rate is inferred.
+
+The `./resource-flow` compatibility export forwards to `@red-cup-engineering/economic-engine/resource-flow`. Its `deriveResourceFlowReadings(sourceObservations)` operation provides a pure projection of the original source observations. A caller supplies observations with these fields:
+
+- sourceObservationAddress: existing ni:///sha-256 reference to the original observation; repeated identical source records are idempotent and conflicting reuse fails.
+- startAt and endAt: consecutive canonical UTC seconds, representing an actual one-second meter interval, never an interpolated job duration.
+- feedRef, serviceActorRef, supplierActorRef and consumerActorRef: source feed, running service and typed micro-enterprise actor references, so independent resource streams cannot silently mix.
+- measurements: admitted {resource,unit,amount:{numerator,denominator}} physical or inference-token quantities. Each measurement is checked by the shared exact-number resource admission.
+
+The function returns a deterministic array of second, minute, hour and day UTC readings. Each retains the feed and actor coordinates; amount stays an exact rational with its own canonical unit; aggregation is sum except memory-peak, which uses peak; observedSeconds exposes the actual represented interval coverage, windowSeconds the whole window duration, and sourceCount counts distinct original observation inputs. Missing seconds produce no imaginary zero events, and unrelated commodities never combine. Consumers can pivot these readings by service or actor without retaining four materialized copies of each source sample.
+
+This package deliberately does not sample a host, post financial entries, price CPU, authorize spending, or change the Group's canonical Beancount ledger. Those duties belong to the original host's meter/SEAVT carrier, accounting producer, and independent Group bookkeeper. For a native local qualification run, execute:
+
+    node --test test/resource-measurement.test.mjs test/resource-flow.test.mjs
+
+from this package directory.
+
+
+
+## Exact event-time resource flows (0.1.4)
+
+\`./resource-measurement\` now exports \`admitResourceQuantity\` and
+\`admitResourceQuantities\`: a source-reported noncurrency quantity can be
+normalized and summed without inventing a supplier or economic beneficiary.
+The existing \`admitResourceMeasurement\` and
+\`admitResourceMeasurements\` independently require real actor references and
+retain their actor-specific quantity grades. Neither form posts a financial
+transaction.
+
+\`./resource-flow\` exports two different operations that must not be
+conflated:
+
+- \`deriveResourceFlowReadings\` receives actual aligned, measured one-second
+  **intervals** and reports measured coverage plus second/minute/hour/day
+  totals. It refuses unknown or fabricated second-level intervals.
+- \`deriveResourceEventReadings\` receives **discrete source events** with
+  \`sourceObservationAddress\`, \`observedAt\`, \`feedRef\`,
+  \`resourceSubjectRef\`, optional **actually known** \`consumerActorRef\`,
+  and measured quantities. It groups consumption by the *observed event
+  timestamp* at second/minute/hour/day granularity. Such sums are not
+  evidence of a smooth resource rate during the preceding second.
+
+Both normalize exact units and reject duplicate dimensions or conflicting
+reuses of source addresses. Provider token categories (\`inference-input\`,
+\`inference-output\`, \`inference-cached-input\`,
+\`inference-cache-creation-input\`, \`inference-cache-read-input\`,
+\`inference-cache-write-input\`, \`inference-reasoning-output\`,
+\`inference-total\`) remain distinct. Cache and reasoning components may be
+subsets, depending on the native provider; **summing these categories is
+not a valid total-token calculation**. Recording a token cost estimate is
+not evidence that an invoice was paid or a Group bookkeeper posted money.
+
+Event streams without a known customer actor retain
+\`attribution:consumer-unattributed\` in the projections, rather than
+fabricating one. These are reusable numerical projections: consumers supply
+genuine identified events from their own typed SEAVT storage.
+
+
+## Compare energy and resource flow without inventing evidence
+
+The same original resource-flow export now includes
+compareResourceFlowWindows({baselineObservations,successorObservations,
+baselineStartAt,successorStartAt,resolution,comparisonRef,matchedWorkEvidenceRef?}).
+
+Supply the original one-second source observations, rather than fabricated
+aggregate numbers. Both pass through the original deriveResourceFlowReadings
+validation. The comparison selects two disjoint, ordered and UTC-aligned
+windows of the same resolution and matches each separate feed, service,
+supplier, consumer, resource, unit and aggregation. An available complete
+pair yields an exact signed successor minus baseline rational difference and,
+where baseline is nonzero, an exact successor/baseline ratio through the
+original graded-rational provider. Peak memory is a maximum difference,
+not additive flow or saved joules. Omitted dimensions, missing whole seconds,
+different actors/feeds, unknown units, overlapping independently named same-second meters without a partition law, and reused source observation identities
+cannot give fabricated savings.
+
+A supplied matchedWorkEvidenceRef is a pointer for external validation, NOT
+proof that runs delivered equivalent work, had matched load, shared a calibrated
+electricity meter, or were representative. Only an authorized independent Work
+assayer can qualify equivalence, applicable standards and legitimate receiving
+conditions. The result deliberately carries
+requirementOrEngineeringAcceptanceClaimAllowed=false. A numerical measurement
+cannot unilaterally create a Requirement, authorize Specifying, Architecting,
+Designing or Fabricating, post money, or prove deployment.
+
+The source-owner sequence is:
+source-observed resource changes and coverage -> original attributed Work
+and admitted Requirement -> tested performance/energy specification ->
+architecture constraints and design alternatives -> original fabrication,
+tests and immutable source readback -> actual deployed remeasurement under
+matched conditions -> independent recipient judgment.
+The Group's original Engineering Work #137 owns the four-stage closure;
+Coesite tune-up Work #293 selects an admissible original improvement.
+
+Measured or modeled electricity in joules, provider token quantities, FOCUS
+ConsumedQuantity/PricingQuantity, and SCI carbon intensity are separate
+claims. SCI also requires carbon intensity and hardware embodied-emission
+information, neither of which this resource reader invents.
+
+Run: node --test test/resource-flow.test.mjs test/resource-measurement.test.mjs.
+Native CI exercises this plus the full exact-number package tests. Source
+passing does not establish installed agent use or a real consumer improvement.
+
+
+## Reported accepted-output intensity for Wednesday efficiency (source contract)
+
+**Source of requirement:** the 561 Group emsenn's October 21, 2026 Wednesday
+directive: measure changes in energy and resource flow, derive efficiency
+requirements, change specifications and designs, and refabricate the original
+systems. This is an incremental native exact-number measurement supplier to
+the [original Coesite tune-up/Work #293](https://github.com/coesite-operations/operations-services-section/issues/293)
+and [Red Cup Engineering four-stage Work #137](https://github.com/red-cup-engineering/engineering-services-section/issues/137).
+It is neither a separate ledger, actor, requirement-admission writer nor
+engineering runtime.
+
+### Behavioural specification and protected receiving
+
+- **EFF-01 — Source fidelity.** An intensity comparison SHALL invoke
+  \`compareResourceFlowWindows\` on the original source-addressed, exactly
+  dimensioned one-second meter observations. It SHALL retain original absolute
+  changes alongside normalized intensity, preserving meter, actor, supplier,
+  consumer, UTC window, source count, units and observation coverage.
+- **EFF-02 — Same functional unit.** Two independently *reported* outcome
+  populations SHALL identify the **same** source-referenced functional unit
+  and distinct source-evidence identities, with an exact nonnegative rational
+  reported number of accepted outcomes. The reader SHALL never claim that an
+  NI-shaped source locator authenticates a beneficiary or establishes actual
+  quality, utility, workload equivalence or delivered acceptance.
+- **EFF-03 — Exact calculation.** On fully observed, nonambiguous **additive
+  consumption** dimensions and strictly positive reported outcome quantities,
+  the reader SHALL return exact per-outcome baseline and successor intensities,
+  their signed difference, and successor/baseline ratio only when baseline
+  intensity is nonzero, reusing the shared graded-rational carrier.
+  It SHALL NOT collapse incompatible units into a scalar cost/efficiency rank.
+- **EFF-04 — Defined refusal.** Missing seconds or resource dimensions,
+  multiple unpartitioned source meters, a nonadditive maximum, mismatched
+  functional units, zero reported accepted outcomes, malformed quantities,
+  and reused outcome-source identities SHALL either explicitly refuse
+  comparison or withhold normalized results. They SHALL NOT become zero use,
+  estimated acceptance or invented resource savings.
+- **EFF-05 — Total versus intensity.** Reporting lower energy **per accepted
+  reported outcome** SHALL NOT imply lower absolute joules, carbon, money or
+  environmental cost. The result SHALL preserve the absolute resource delta
+  so increased throughput and demand rebound remain inspectable.
+- **EFF-06 — Authority and receiving.** The outcome quantities and source
+  references are **caller-reported evidence awaiting actual source and
+  beneficiary qualification**. The producer SHALL always withhold claims
+  of admitted Requirements, approved Specification/Architecture/Design,
+  qualified Fabrication, installed host or independent beneficiary effect.
+  Original Group/Engineering/Coesite owners SHALL admit these stages separately.
+
+### Interface/design: the original producer, not another meter
+
+\`compareResourceFlowIntensityWindows\` is exported from the existing
+\`@red-cup-engineering/exact-number-data-service/resource-flow\`.
+It accepts the *same* before/after fields as
+\`compareResourceFlowWindows\`, plus:
+
+\`\`\`js
+baselineOutcome: {
+  sourceEvidenceRef: "ni:///sha-256;<43-character-source-address>",
+  functionalUnitRef: "ni:///sha-256;<43-character-source-defined-functional-unit>",
+  acceptedUnits: { numerator: "10", denominator: "1" }
+},
+successorOutcome: {
+  sourceEvidenceRef: "ni:///sha-256;<different-source-address>",
+  functionalUnitRef: "ni:///sha-256;<same-functional-unit>",
+  acceptedUnits: { numerator: "12", denominator: "1" }
+}
+\`\`\`
+
+The source response retains the **entire existing resource comparison** under
+\`resourceComparison\`, and adds per-resource dimension
+\`baselinePerReportedAcceptedUnit\`, \`successorPerReportedAcceptedUnit\`,
+\`differencePerReportedAcceptedUnit\`, \`successorOverBaselineIntensity\`,
+and \`intensityStatus\` only when admissible. An exact denominator
+is an observed or claimed count, not a fictitious scalar convenience.
+
+The native comparison is \`E_b/N_b\` versus \`E_s/N_s\` for the same
+functional unit, where \`E\` is one specific measured resource grade.
+To interpret it as an **actual efficiency improvement**, independently
+verify \`N\` as accepted comparable-quality useful outcomes, meter
+calibration, environment/load and receiver rights; also check fixed-volume
+total input and displaced upstream/downstream inputs.
+
+### Predeclared native receiving cases
+
+The source tests require (A) total energy *increases* while exact joules per
+reported accepted result *decrease*; (B) total energy decreases but intensity
+worsens; (C) zero accepted outcomes, nonadditive peak and absent dimensions
+withhold ratios; (D) partial minute, reused or mismatched provenance,
+invalid rational and differing functional units refuse; and (E) zero
+baseline consumption gives no invented relative percentage. All are
+source-level cases—not real accepted Work receipts.
+
+Run \`npm test\` on this exact package and read the changed source back.
+Package publication, installation into FeltOS/Cold Red Gate, actual operation
+and independent beneficial outcomes remain further explicit gates.
+
+
+## Event-time efficiency without false second-level coverage
+
+**Consumer and source:** FeltOS's existing
+\`agent-session-token-usage-flow\` reads individual source-identified provider
+turn **events**, and the original \`deriveResourceEventReadings\` folds them by
+their event timestamps. Their clock positions are *not* one-second duration
+samples. The previous \`compareResourceFlowIntensityWindows\` is specifically
+for fully observed one-second **interval** meters; it must not be applied to
+these event populations by inventing a 60-second usage vector. The original
+[Coesite resource-flow Tune-up #293](https://github.com/coesite-operations/operations-services-section/issues/293),
+[Engineering four-stage requirement #137](https://github.com/red-cup-engineering/engineering-services-section/issues/137)
+and [FeltOS original Source turn normalization PR #157](https://github.com/red-cup-engineering/feltos/pull/157)
+supply the Work and producer/consumer identities.
+
+This module now exports \`compareResourceEventIntensityWindows\`, a separate
+read-only *conditional* source-event-to-reported-functional-unit comparison
+using the **existing** \`deriveResourceEventReadings\` and exact graded
+arithmetic. It does not create an alternative metering registry, ledger,
+tenant authority or admitted Work acceptance.
+
+**EB-01 — Correct time semantics.** Accept two original event populations
+from disjoint, ordered UTC source-event windows and source-defined subjects.
+Use their actual discrete \`observedAt\` stamps. Preserve distinct inference
+input/output/cached/reasoning/total grades; no inference interval, physical
+joules, monetary price, complete observation set or additive total of
+overlapping token categories is invented.
+
+**EB-02 — Stable identity, original coverage.** Reused original source IDs
+in one population are deduplicated by the incumbent event fold; conflicting
+source IDs refuse. Reuse *across* different windows refuses. Source timestamps
+outside declared windows, differently scoped source subjects and invalid
+units refuse. Event count is a reading of supplied source events, **not**
+proof that every event in a provider/session interval was acquired.
+
+**EB-03 — Consumer and source separation.** Preserve original source-subject
+identity, feed, consumer Actor (if actually known), resource grade and unit.
+Two unlike subject identities require an explicit *caller-reported* matching
+reference, not an inferred join. Different or missing consumer Actors do not
+yield a corporate per-result efficiency comparison. The NI syntax of the
+matching reference does not prove underlying same-purpose, same-quality,
+same-provider or same-rights comparison.
+
+**EB-04 — Functional denominator.** Both outcomes require the same original
+functional-unit NI and separate source-evidence references with exact
+nonnegative rational reported accepted-unit amounts. Zero output, absent
+event category, unknown consumer or a nonadditive maximum withhold normalized
+results, not convenience zero. Each admissible recorded grade returns
+exact baseline/successor resource totals, signed **total** difference,
+per-reported-outcome intensities, signed intensity difference and
+successor/baseline intensity ratio only when that baseline is nonzero.
+
+**EB-05 — Conditional, never independently qualified here.** The return
+kind \`source-event-window-conditional-resource-intensity-reading\` marks
+\`sourceEventCollectionCompletenessVerified:false\`,
+\`sourceAndFunctionalEquivalenceIndependentlyVerified:false\` and
+\`requirementOrEngineeringAcceptanceClaimAllowed:false\`. Its calculated
+difference is **only for the recorded event subset and caller-reported
+output**. Neither provider completeness nor beneficiary acceptance can be
+self-attested through this pure numerical operation. To derive a live
+efficiency Requirement, the actual original assayer must separately
+qualify: exact event provenance and full acquisition scope, independent
+accepted useful outcome count, same function/quality, stable rights and
+reference workload, and full resource displacement/rebound. Then carry
+the original Requirement through **Specifying → Architecting → Designing →
+Fabricating**, select and install the resulting producer, and remeasure
+a matched real service with independent receiving.
+
+**EB-06 — Different consumers retain different evidence.** Existing
+one-second power/CPU/bytes interval meters continue to use
+\`compareResourceFlowIntensityWindows\`. Native provider inference
+token/event measurements use this event-specific view *only after the new
+compatible package export is genuinely installed*. A source commit, 0.1.5
+package manifest, passing CI, or an NI-shaped reference does not establish
+registry publication or FeltOS consuming this revision. FeltOS currently
+declares the older 0.1.4 dependency; publication, reproducible install,
+consumer acceptance, first real full-coverage measurement and beneficiary
+outcome remain distinct required receiving.
+
+**Verification:** \`npm test\` runs original interval, event, rational
+and unit admission suites. The new event fixtures require total use and
+per-reported-outcome efficiency to disagree in either direction, stable
+deduplication under replay/permutation, cross-Actor and cross-subject
+refusal, nonadditive peak and overlapping token category independence,
+missing/zero output, invalid/mismatched timestamps and unit identities.
+Those are native source tests with controlled fixtures, not observations
+of current production energy or independently received services.
+
+
+## Actual package fabrication and independent local receiving
+
+This source owner now has a native
+[\`scripts/assay-resource-flow-package.mjs\`](scripts/assay-resource-flow-package.mjs)
+which tests more than source parsing or a mocked in-repository import. It
+executes the **original npm package maker** twice on the same exact checked-out
+source with offline, no-scripts constraints; refuses nonidentical complete
+archive SHA-256 bytes; installs one produced \`.tgz\` into an independent
+temporary Node package with **offline**, **no scripts**, **no audits** and
+**no fund/network**; and imports the actual
+\`@red-cup-engineering/exact-number-data-service/resource-flow\` export
+from that installed artifact. The consumer executes a positive comparison,
+deduplication test and adverse reused-source test using the installed
+artifact, not the checkout.
+
+Run \`node scripts/assay-resource-flow-package.mjs\` at this repository's
+source revision. Native GitHub Actions
+[\`resource-flow-contract.yml\`](.github/workflows/resource-flow-contract.yml)
+tests this artifact boundary alongside complete source package tests.
+The emitted SHA-256 is a **CI runner's locally fabricated artifact receipt**,
+not a published package hash or a claim that Cold Red Gate selected it. A
+source branch must first pass both independent pack and installed-isolate
+receiving; making that result an actual immutable source-tagged release,
+publishing through the original registry, selecting that release in FeltOS,
+installing on a host and independently receiving real Work are **separate,
+still-unfulfilled gates**. No measured production energy reduction is
+inferred from the reproducibility of a tarball.
+
+## Exact cash-flow valuation
+
+`./cash-flow` values ordered decimal cash-flow occurrences at a declared constant per-period rate. It retains exact rational discounts, values and total, rounds only the total under the requested rule, and returns the exact rounding residual. Its separate receiver binds every result to the original request and host bounds. See [the contract](https://github.com/red-cup-engineering/computer-financial-systems-engineering-services-section/blob/main/apps/financial-engine/src/cash-flow.md). Draft2020-12 request/result schemas are exported for the default bounded service profile.
+
+
+## Exact financial yield brackets with independent receiving
+
+The Financial Engine owns
+`@red-cup-engineering/financial-engine/discount-rate-bracket` for
+**guaranteed unique**, exactly checkable internal-rate-of-return intervals.
+The request retains the original currency, period unit, **ordered source cash
+flow occurrences**, and the original lower/upper per-period decimal rates.
+`admitDiscountRateBracketWork` uses the engine's bounded
+`admitCashFlowRequest` and verifies the source bounds have opposite NPV
+signs **before a merchant payment challenge**. No agent-written boolean or
+unverified rate constitutes admission.
+
+This operation deliberately refuses general mixed-sign cash flows, which can
+have multiple IRRs. For a strictly negative net period-zero investment and
+nonnegative later receipts, at least one positive, NPV is strictly decreasing
+for rates above -1; exactly one root exists. The producer uses exact rational
+bisection for 1–32 bounded steps. An irrational root stays an exact rational
+interval with verified opposing signs and width at most originalWidth/2^steps.
+
+`verifyDiscountRateBracketWork(originalRequest,received)` independently
+evaluates the **polynomial** NPV identity, not the producer's discounted-sum
+implementation or claimed flag. It refuses changed source occurrence order,
+amount lexemes, context, bounds, forged rational evidence, noncanonical
+fractions and false interval widths. The result carries no actual payment,
+yield observation, investment advice, authorization or financial ledger entry.
+
+See [mathematical source and exact proof constraints](https://github.com/red-cup-engineering/computer-financial-systems-engineering-services-section/blob/main/apps/financial-engine/src/cash-flow.md),
+`test/discount-rate-bracket.test.mjs` and the exported Draft 2020-12
+request/receipt JSON Schemas. Source/isolated test success does not establish
+installed downstream SignCraft, merchant, buyer acceptance, original registry
+publication or profit. Retain original existing `./cash-flow` NPV and its
+independent receipt verifier unchanged.
+
+## From the copy in red-cup-engineering/number-computer-data-engineering-services-section
+
+Shared exact integer, rational, matrix and decimal arithmetic recovered from the installed Bare Cedar Fog source into Red Cup data engineering. Values use decimal strings and BigInt arithmetic rather than binary floating point. Decimal conversion, arithmetic and rational conversion remain separate exported operations; division precision is selected by its caller.
+
+This is source recovery, not independent publication or completed consumer migration. The old snapshot routes remain until consumers can receive this supplier. The computational carriers are preserved; comments about scientific theory are provenance, not proof of scientific approval or full Sign primitive composition.
+
+## Receive this package
+
+Pack this supplier from its own directory with `npm pack --ignore-scripts`, then install the resulting archive in the consumer with `npm install --ignore-scripts /path/to/archive.tgz`. Import `@red-cup-engineering/exact-number-data-service/decimal-string` or `/exact-number` through the declared exports. Installing the parent repository does not install this nested package.
+
+The package archive was installed into an isolated consumer with no snapshot or custom resolver. Exact arithmetic retained `1e-25` and integer coefficients above binary precision. This establishes local package reception; it does not establish registry publication, an enduring shared distribution endpoint or production migration.
+
+`./graded` preserves exact commodity and dimension grades, with canonical JSON admission, same-grade arithmetic, explicit grade products/quotients and conservation operations. This source was recovered from Bare Cedar Fog c677e9999ea05bf577f9355660687e56dffd3da9 without replacing unknown values with zeros. It does not establish Actor ownership, budget admission or a general resource model. An independent packed-package consumer demonstrated exact large-quantity addition, JSON round-trip admission and refusal to add HIVE to HBD; the recovered Hive reward consumer demonstrated exact HIVE/VESTS conversion in both directions. Other snapshot consumers remain to migrate.
+
+## Exact-coordinate framework rigidity (2D and 3D)
+
+The existing exact rational matrix engine now has a specific, finite
+bar-and-joint framework realization producer:
+[`src/framework-rigidity.mjs`](src/framework-rigidity.mjs). It constructs
+edge displacement rows and calls the original `ratRank`—no copied linear
+algebra, no floating-point geometry. The corresponding local command accepts
+one JSON object on stdin:
+
+```sh
+printf '%s\n' '{"vertices":[[0,0],[2,0],[0,3],[3,4],[5,2]],"contacts":[[0,1],[0,2],[1,2],[0,3],[1,3],[1,4],[2,4]]}' \
+  | node services/number-services-section/services/exact-number-data-service/bin/readout-framework-rigidity.mjs
+```
+
+The rank is **7** for this five-site source-derived contact graph; exchange
+the last seven-contact pattern for
+`[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3],[3,4]]` and it becomes **6**.
+Both have identical vertex/contact counts. In three dimensions a genuine
+tetrahedron's K4 rigidity matrix has rank **6** while a coplanar K4
+realization has rank **5**. The module reuses the same source-owned exact
+rational-number parser, including fractional and very large integer
+coordinates; invalid and duplicate contacts fail before computation.
+
+This is the missing distinction between **generic combinatorial planar
+rigidity** (Laman/pebble graph test) and **the exact infinitesimal rigidity of a
+particular 2D/3D embedding**. A 3D matrix rank is not a combinatorial test
+for all geometric positions, and a structural model is not a calibrated
+measurement, proof of vitrimer chemistry, or prediction of elastic modulus.
+Lenticule Science's source is the October 1
+*Associative Exchange and the Ring–Chain Ledger*, §1. Specific specimen
+measurement, coordinate provenance and physical receiving remain separate.
+The source export and command are new; registry publication and dependent
+installation are not established by a source commit.
+
+## Resource flow over observed seconds
+
+The original "./resource-measurement" export admits graded noncurrency quantities with exact rational units. It recognizes disk reads/writes, network ingress/egress, CPU user/system/runtime, RAM residency and peak, inference token classes, energy and GPU runtime. Bit and byte amounts normalize to exact bytes; milliseconds normalize to exact seconds. No token-to-money or physical-to-money exchange rate is inferred.
+
+The new "./resource-flow" export provides deriveResourceFlowReadings(sourceObservations), a pure projection of the **original source observations**, not a competing journal or book. A caller supplies observations with these fields:
+
+- sourceObservationAddress: existing ni:///sha-256 reference to the original observation; repeated identical source records are idempotent and conflicting reuse fails.
+- startAt and endAt: consecutive canonical UTC seconds, representing an actual one-second meter interval, never an interpolated job duration.
+- feedRef, serviceActorRef, supplierActorRef and consumerActorRef: source feed, running service and typed micro-enterprise actor references, so independent resource streams cannot silently mix.
+- measurements: admitted {resource,unit,amount:{numerator,denominator}} physical or inference-token quantities. Each measurement is checked by the shared exact-number resource admission.
+
+The function returns a deterministic array of second, minute, hour and day UTC readings. Each retains the feed and actor coordinates; amount stays an exact rational with its own canonical unit; aggregation is sum except memory-peak, which uses peak; observedSeconds exposes the actual represented interval coverage, windowSeconds the whole window duration, and sourceCount counts distinct original observation inputs. Missing seconds produce no imaginary zero events, and unrelated commodities never combine. Consumers can pivot these readings by service or actor without retaining four materialized copies of each source sample.
+
+This package deliberately does not sample a host, post financial entries, price CPU, authorize spending, or change the Group's canonical Beancount ledger. Those duties belong to the original host's meter/SEAVT carrier, accounting producer, and independent Group bookkeeper. For a native local qualification run, execute:
+
+    node --test test/resource-measurement.test.mjs test/resource-flow.test.mjs
+
+from this package directory.
+
+
+
+## Exact event-time resource flows (0.1.4)
+
+\`./resource-measurement\` now exports \`admitResourceQuantity\` and
+\`admitResourceQuantities\`: a source-reported noncurrency quantity can be
+normalized and summed without inventing a supplier or economic beneficiary.
+The existing \`admitResourceMeasurement\` and
+\`admitResourceMeasurements\` independently require real actor references and
+retain their actor-specific quantity grades. Neither form posts a financial
+transaction.
+
+\`./resource-flow\` exports two different operations that must not be
+conflated:
+
+- \`deriveResourceFlowReadings\` receives actual aligned, measured one-second
+  **intervals** and reports measured coverage plus second/minute/hour/day
+  totals. It refuses unknown or fabricated second-level intervals.
+- \`deriveResourceEventReadings\` receives **discrete source events** with
+  \`sourceObservationAddress\`, \`observedAt\`, \`feedRef\`,
+  \`resourceSubjectRef\`, optional **actually known** \`consumerActorRef\`,
+  and measured quantities. It groups consumption by the *observed event
+  timestamp* at second/minute/hour/day granularity. Such sums are not
+  evidence of a smooth resource rate during the preceding second.
+
+Both normalize exact units and reject duplicate dimensions or conflicting
+reuses of source addresses. Provider token categories (\`inference-input\`,
+\`inference-output\`, \`inference-cached-input\`,
+\`inference-cache-creation-input\`, \`inference-cache-read-input\`,
+\`inference-cache-write-input\`, \`inference-reasoning-output\`,
+\`inference-total\`) remain distinct. Cache and reasoning components may be
+subsets, depending on the native provider; **summing these categories is
+not a valid total-token calculation**. Recording a token cost estimate is
+not evidence that an invoice was paid or a Group bookkeeper posted money.
+
+Event streams without a known customer actor retain
+\`attribution:consumer-unattributed\` in the projections, rather than
+fabricating one. These are reusable numerical projections: consumers supply
+genuine identified events from their own typed SEAVT storage.
+
+## Acceptance
+
+Run `npm test` for the source suite. See the [runnable consumer example](examples/quickstart.test.mjs).
