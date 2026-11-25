@@ -34,7 +34,6 @@ const run=(command,args,cwd)=>{
    "): "+String(result.stderr).slice(-3000)+"\n"+String(result.stdout).slice(-3000));
  return result.stdout;
 };
-const digest=file=>sha256Hex(readFileSync(file));
 const ni=x=>"ni:///sha-256;"+x.repeat(43);
 try{
  const first=join(scratch,"first"),second=join(scratch,"second"),consumer=join(scratch,"consumer");
@@ -62,7 +61,7 @@ try{
   return join(dest,filename);
  };
  const archiveOne=pack(first),archiveTwo=pack(second);
- const hashOne=digest(archiveOne),hashTwo=digest(archiveTwo);
+ const hashOne=sha256Hex(readFileSync(archiveOne)),hashTwo=sha256Hex(readFileSync(archiveTwo));
  assert.equal(hashOne,hashTwo,"two identical source inputs must fabricate byte-identical archives");
  const manifest=JSON.parse(readFileSync(join(sourceRoot,"package.json"),"utf8"));
  writeFileSync(join(consumer,"package.json"),JSON.stringify({
