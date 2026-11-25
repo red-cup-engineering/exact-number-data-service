@@ -1,3 +1,4 @@
+import { sha256Hex } from "@red-cup-engineering/semiotic-content-address-system";
 import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engineering-services-section/temporary-directory";
 /**
  * The original exact-number package producer must fabricate reproducible
@@ -8,7 +9,6 @@ import { makeTemporaryDirectory } from "@red-cup-engineering/computer-file-engin
  */
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {createHash} from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 import {dirname,join} from "node:path";
@@ -34,7 +34,7 @@ const run=(command,args,cwd)=>{
    "): "+String(result.stderr).slice(-3000)+"\n"+String(result.stdout).slice(-3000));
  return result.stdout;
 };
-const digest=file=>createHash("sha256").update(readFileSync(file)).digest("hex");
+const digest=file=>sha256Hex(readFileSync(file));
 const ni=x=>"ni:///sha-256;"+x.repeat(43);
 try{
  const first=join(scratch,"first"),second=join(scratch,"second"),consumer=join(scratch,"consumer");
